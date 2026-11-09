@@ -1,4 +1,4 @@
-const CURRENT_VERSION = "2.1";
+const CURRENT_VERSION = "2.2";
 
 let savedProgress = localStorage.getItem('librogame_progress');
 let playerProgress = savedProgress ? JSON.parse(savedProgress) : {};
@@ -52,57 +52,77 @@ function exportSaveGameCSV() {
     document.body.removeChild(link);
 }
 
-// FIX SALVATAGGI MOBILE: Riconosce i CSV europei e resetta la memoria a ogni click
+// FIX SALVATAGGI 2.2: Generazione interamente dinamica e avvisi per ogni possibile errore
 function importSaveGameCSVPrompt() {
-    let input = document.getElementById('csvMobileInput');
-    
-    if (!input) {
-        alert("Errore di sistema: input caricamento non trovato.");
-        return;
-    }
-
-    // 1. Resetta il valore PRIMA del caricamento (così puoi selezionare anche lo stesso file 2 volte di fila)
-    input.value = '';
+    // Crea un input temporaneo, invisibile, che scavalca i blocchi di sicurezza dei browser
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.style.position = 'absolute';
+    input.style.left = '-9999px';
+    document.body.appendChild(input);
 
     input.onchange = e => {
-        if (!e.target.files.length) return;
-        let file = e.target.files[0];
+        let files = e.target.files;
+        if (!files || files.length === 0) {
+            input.remove(); // Se l'utente annulla la selezione, ripulisce la memoria
+            return;
+        }
+        
+        let file = files[0];
         let reader = new FileReader();
         
         reader.onload = event => {
             try {
-                let text = event.target.result.trim();
-                if (!text) {
-                    alert("Attenzione: Il file selezionato è completamente vuoto.");
+                let text = event.target.result;
+                if (!text || text.trim() === "") {
+                    alert("Il file selezionato è vuoto.");
+                    input.remove();
                     return;
                 }
 
-                let lines = text.split('\n');
+                let lines = text.trim().split('\n');
                 let loadedProgress = {};
+                
+                if (typeof bookCatalog === 'undefined') {
+                    alert("Errore critico: il catalogo dei libri non è caricato. Aggiorna la pagina.");
+                    input.remove();
+                    return;
+                }
+
                 let bookTitlesInDb = {};
-                Object.keys(bookCatalog).forEach(bId => bookTitlesInDb[bookCatalog[bId].title.trim().toLowerCase()] = bId);
+                Object.keys(bookCatalog).forEach(bId => {
+                    bookTitlesInDb[bookCatalog[bId].title.trim().toLowerCase()] = bId;
+                });
 
                 let salvataggiTrovati = 0;
 
                 lines.forEach(line => {
                     if (!line.trim()) return;
                     
-                    // Sostituisce eventuali punti e virgola (standard europeo) con virgole normali per non far bloccare il sistema
+                    // Gestione automatica dei delimitatori europei (sostituisce i ; con le ,)
                     let cleanLine = line.replace(/;/g, ',');
                     
                     let bId, bTitle, nId, stats, sp;
                     let match = cleanLine.match(/^([^,]+),"([^"]+)",(.+)$/);
                     
                     if (match) {
-                        bId = match[1].trim(); bTitle = match[2].trim();
+                        bId = match[1].trim(); 
+                        bTitle = match[2].trim();
                         let rest = match[3].split(',');
-                        nId = rest[0].trim(); stats = rest.slice(1, 7).map(v => parseInt(v)); sp = parseInt(rest[7]);
+                        nId = rest[0].trim(); 
+                        stats = rest.slice(1, 7).map(v => parseInt(v)); 
+                        sp = parseInt(rest[7]);
                     } else {
                         let parts = cleanLine.split(',');
                         if (parts.length >= 9) {
-                            bId = parts[0].trim(); bTitle = parts[1].trim(); nId = parts[2].trim();
-                            stats = parts.slice(3, 9).map(v => parseInt(v)); sp = parseInt(parts[9]);
-                        } else return;
+                            bId = parts[0].trim(); 
+                            bTitle = parts[1].trim(); 
+                            nId = parts[2].trim();
+                            stats = parts.slice(3, 9).map(v => parseInt(v)); 
+                            sp = parseInt(parts[9]);
+                        } else {
+                            return; // Salta le righe non valide
+                        }
                     }
                     
                     salvataggiTrovati++;
@@ -111,13 +131,22 @@ function importSaveGameCSVPrompt() {
                     if (targetBookId && bookCatalog[targetBookId]) {
                         let book = bookCatalog[targetBookId];
                         let runtimeStats = {};
-                        book.stats.forEach((s, idx) => runtimeStats[s.id] = !isNaN(stats[idx]) ? stats[idx] : s.value);
-                        loadedProgress[targetBookId] = { currentNodeId: nId || book.startingNodeId, runtimeStats: runtimeStats, skillPoints: !isNaN(sp) ? sp : 0, pendingSpSpend: {}, notifications: [] };
+                        book.stats.forEach((s, idx) => {
+                            runtimeStats[s.id] = !isNaN(stats[idx]) ? stats[idx] : s.value;
+                        });
+                        loadedProgress[targetBookId] = { 
+                            currentNodeId: nId || book.startingNodeId, 
+                            runtimeStats: runtimeStats, 
+                            skillPoints: !isNaN(sp) ? sp : 0, 
+                            pendingSpSpend: {}, 
+                            notifications: [] 
+                        };
                     }
                 });
                 
                 if (salvataggiTrovati === 0) {
-                    alert("Errore: Il file non contiene salvataggi compatibili col gioco.");
+                    alert("Nessun salvataggio valido trovato. Sicuro che sia il file corretto?");
+                    input.remove();
                     return;
                 }
                 
@@ -132,13 +161,20 @@ function importSaveGameCSVPrompt() {
                 }
                 alert("Partita caricata con successo!");
             } catch (err) { 
-                alert("Errore critico nella lettura del file. Potrebbe essere danneggiato."); 
+                alert("Errore durante la lettura del file: " + err.message); 
             }
+            
+            input.remove(); // Distrugge l'input a lavoro finito
         };
+        
+        reader.onerror = () => {
+            alert("Impossibile leggere il file selezionato dal dispositivo.");
+            input.remove();
+        };
+        
         reader.readAsText(file);
     };
     
-    // Attiva il click sul pulsante nascosto
     input.click();
 }
 
@@ -190,7 +226,6 @@ function openOrStartBook(bookId) {
 
     let script = document.createElement('script');
     
-    // Il timestamp obbliga il cellulare a scaricare i testi sempre aggiornati
     const cacheBuster = new Date().getTime();
     script.src = `${bookId}.js?v=${cacheBuster}`;
     
@@ -326,7 +361,6 @@ function cancelSkillPoints() { currentGameState.skillPoints += Object.values(cur
 function openPasswordModal() { if (!isAdminMode) { document.getElementById('adminPwdInput').value = ""; document.getElementById('passwordModal').style.display = 'flex'; } else { isAdminMode = false; renderHome(); } }
 function verifyAdminPassword() { if (document.getElementById('adminPwdInput').value === "Magium") { isAdminMode = true; closeModal('passwordModal'); renderHome(); } else alert("Password errata!"); }
 
-// L'editor visivo di creazione/modifica è disabilitato
 function openAdminEditor() { alert("Nella versione Multi-File, aggiungi i nodi modificando direttamente i file .js della storia."); }
 
 renderHome();
