@@ -24,7 +24,7 @@
                 <span id="bookCount" style="font-size: 13px; color: var(--text-muted);">0 titoli</span>
             </div>
             <!-- Loading indicator per il caricamento dinamico -->
-            <div id="loadingIndicator" style="display: none; text-align: center; color: var(--accent-gold); margin-bottom: 10px;">Caricamento in corso...</div>
+            <div id="loadingIndicator" style="display: none; text-align: center; color: var(--accent-gold); margin-bottom: 10px;">Caricamento storia in corso...</div>
             <div id="bookListContainer"></div>
         </div>
     </div>
@@ -58,11 +58,11 @@
     <div id="adminScreen" class="screen">
         <header>
             <button class="header-btn" onclick="openNodeEditor(null)">➕ Nuovo Nodo</button>
-            <div id="adminHeaderTitle" class="header-title">Editor Disabilitato in versione Multi-File</div>
+            <div id="adminHeaderTitle" class="header-title">Editor Disabilitato</div>
             <button class="header-btn" onclick="returnToHome()" style="color:var(--accent-gold); font-weight:bold;">💾 Fine</button>
         </header>
         <div class="container">
-            <p style="color: var(--text-muted); text-align: center; margin-top: 20px;">L'editor visivo è disabilitato in questa versione. Modifica direttamente i file .js della storia per aggiungere nodi.</p>
+            <p style="color: var(--text-muted); text-align: center; margin-top: 20px;">L'editor visivo è disabilitato. Modifica direttamente i file .js della storia per aggiungere nodi.</p>
         </div>
     </div>
 
@@ -111,23 +111,22 @@
         </div>
     </div>
 
-    <!-- Sostituisci i vecchi tag <script> con questo blocco anti-cache -->
+    <!-- FIX MOBILE: Pulsante nascosto fisicamente presente nel documento -->
+    <input type="file" id="csvMobileInput" style="display: none;">
+
+    <!-- SCRIPT ANTI-CACHE -->
     <script>
-        // Genera un numero univoco basato sull'orario esatto di caricamento
         const noCacheVersione = new Date().getTime();
         
-        // Crea il tag per caricare il catalogo in modo che scavalchi la cache
         let scriptCatalogo = document.createElement('script');
         scriptCatalogo.src = 'catalogo.js?v=' + noCacheVersione;
         document.body.appendChild(scriptCatalogo);
 
-        // Subito dopo, carica il motore del gioco allo stesso modo
         scriptCatalogo.onload = function() {
             let scriptApp = document.createElement('script');
             scriptApp.src = 'app.js?v=' + noCacheVersione;
             document.body.appendChild(scriptApp);
         };
     </script>
-
 </body>
 </html>
