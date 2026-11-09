@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Librogame Hub - Oltre il quarto mondo</title>
+    <style>
+        /* TEMA 1: Dark Fantasy (Default) */
+        body.theme-dark-fantasy {
+            --bg-color: #12121A;
+            --surface-color: #1A1A26;
+            --card-color: #1E1E2C;
+            --accent-gold: #E5A93C;
+            --accent-blue: #64B5F6;
+            --text-main: #E0E0E0;
+            --text-muted: #A0A0B0;
+            --success-color: #81C784;
+            --fail-color: #E57373;
+        }
+        /* TEMA 2: Pergamena Antica */
+        body.theme-pergamena {
+            --bg-color: #F4EEDC;
+            --surface-color: #E6DDC6;
+            --card-color: #D9CEB3;
+            --accent-gold: #704214;
+            --accent-blue: #5C4033;
+            --text-main: #2C221E;
+            --text-muted: #5C4B40;
+            --success-color: #38761D;
+            --fail-color: #990000;
+        }
+        /* TEMA 3: Cyberpunk Neon */
+        body.theme-cyberpunk {
+            --bg-color: #030508;
+            --surface-color: #0B101D;
+            --card-color: #111A2E;
+            --accent-gold: #00FF66;
+            --accent-blue: #00E5FF;
+            --text-main: #C8FFD4;
+            --text-muted: #00CC55;
+            --success-color: #00FF66;
+            --fail-color: #FF0055;
+        }
+        /* TEMA 4: Forest */
+        body.theme-forest {
+            --bg-color: #111C14;
+            --surface-color: #1A2B1F;
+            --card-color: #233829;
+            --accent-gold: #D4AF37;
+            --accent-blue: #81C784;
+            --text-main: #E8F5E9;
+            --text-muted: #A5D6A7;
+            --success-color: #66BB6A;
+            --fail-color: #EF5350;
+        }
+        /* TEMA 5: Blood Moon */
+        body.theme-blood-moon {
+            --bg-color: #12080A;
+            --surface-color: #201014;
+            --card-color: #2D171D;
+            --accent-gold: #FF334B;
+            --accent-blue: #CFD8DC;
+            --text-main: #FCE4EC;
+            --text-muted: #F8BBD0;
+            --success-color: #66BB6A;
+            --fail-color: #FF334B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; max-width: 600px; margin: 0 auto; overflow: hidden; transition: background 0.3s, color 0.3s; }
+        header { background-color: var(--surface-color); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); height: 56px; }
+        .header-btn { background: none; border: none; color: var(--accent-gold); font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .header-title { font-size: 16px; font-weight: bold; color: var(--text-main); text-align: center; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
+        .mode-indicator { font-size: 13px; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 4px; background: rgba(0,0,0,0.05); }
+        
+        /* Schermate */
+        .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+        .screen.active { display: flex; }
+        .container { flex: 1; overflow-y: auto; padding: 16px; }
+
+        /* Card */
+        .book-card, .node-card { background-color: var(--card-color); border: 1px solid var(--accent-gold); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+        .book-title { font-size: 18px; font-weight: bold; color: var(--accent-gold); margin-bottom: 6px; }
+        .book-id { font-size: 12px; color: var(--text-muted); float: right; }
+        .book-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4; }
+        .book-progress { font-size: 13px; color: var(--accent-gold); font-weight: 500; margin-bottom: 10px; }
+        
+        /* Bottoni */
+        .btn { background-color: var(--surface-color); color: var(--text-main); border: 1px solid var(--accent-gold); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; text-align: center; }
+        .btn-primary { background-color: var(--accent-gold); color: #FFF; font-weight: bold; border: none; }
+        body.theme-pergamena .btn-primary { color: #2C221E; }
+        .btn-gold { background-color: var(--accent-gold); color: #FFF; font-weight: bold; border: none; }
+        .btn-danger { background-color: var(--fail-color); color: #fff; border: none; }
+        .row-end { display: flex; justify-content: flex-end; gap: 8px; }
+
+        /* Lettura Gioco & Scritte Notifiche Testuali */
+        .game-text { flex: 1; overflow-y: auto; padding: 20px; line-height: 1.6; font-size: 16px; white-space: pre-wrap; }
+        .notif-text { font-weight: bold; font-size: 15px; margin-bottom: 12px; display: block; }
+        .notif-success { color: var(--success-color); }
+        .notif-fail { color: var(--fail-color); }
+        .choices-box { padding: 16px; background-color: var(--surface-color); border-top: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; max-height: 35vh; overflow-y: auto; }
+
+        /* Menu Laterale (Drawer) */
+        .drawer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 90; }
+        .drawer { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: var(--surface-color); border-right: 1px solid var(--accent-gold); z-index: 100; display: flex; flex-direction: column; transition: left 0.3s ease; padding: 20px; gap: 12px; }
+        .drawer.open { left: 0; }
+        .drawer-title { font-size: 18px; font-weight: bold; color: var(--accent-gold); margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; }
+        .drawer-item { background: var(--card-color); color: var(--text-main); border: 1px solid var(--accent-gold); padding: 12px; border-radius: 8px; text-align: left; font-size: 15px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .drawer-item:hover { opacity: 0.8; }
+
+        /* Modali */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 110; padding: 20px; }
+        .modal-content { background: var(--surface-color); width: 100%; max-width: 400px; padding: 20px; border-radius: 12px; border: 1px solid var(--accent-gold); max-height: 90vh; overflow-y: auto; }
+        .modal-title { font-size: 18px; font-weight: bold; color: var(--accent-gold); margin-bottom: 16px; }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 15px; }
+        input, textarea, select { width: 100%; padding: 10px; margin-bottom: 10px; background: var(--card-color); border: 1px solid var(--accent-gold); color: var(--text-main); border-radius: 6px; font-size: 14px; }
+        label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+
+        #adminScreen .container { padding: 20px; }
+        .choice-editor-box { background: var(--card-color); padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body class="theme-dark-fantasy">
+
+    <!-- ================= 1. HOME SCREEN ================= -->
+    <div id="homeScreen" class="screen active">
+        <header>
+            <div id="modeIndicator" class="mode-indicator" onclick="openPasswordModal()" style="color: var(--accent-gold);">Player Mode</div>
+            <div class="header-title">Biblioteca Librogame</div>
+            <button class="header-btn" onclick="openThemeModal()">🎨 Tema</button>
+        </header>
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <h2 style="font-size: 20px; color: var(--text-main);">Racconti Disponibili</h2>
+                    <button class="btn" style="padding: 6px 12px; font-size: 13px;" onclick="importSaveGameCSVPrompt()">📂 Carica Dati</button>
+                </div>
+                <span id="bookCount" style="font-size: 13px; color: var(--text-muted);">0 titoli</span>
+            </div>
+            <div id="bookListContainer"></div>
+        </div>
+    </div>
+
+    <!-- ================= 2. GAME SCREEN ================= -->
+    <div id="gameScreen" class="screen">
+        <header>
+            <button class="header-btn" onclick="toggleDrawer(true)">☰ Menu</button>
+            <div id="gameChapterTitle" class="header-title">Capitolo</div>
+            <div style="width: 50px;"></div>
+        </header>
+        <div class="game-text" id="gameStoryText"></div>
+        <div class="choices-box" id="gameChoicesContainer"></div>
+    </div>
+
+    <!-- BARRA LATERALE (DRAWER MENU GIOCO) -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
+    <div class="drawer" id="gameDrawer">
+        <div class="drawer-title">Menu Gioco</div>
+        <button class="drawer-item" onclick="toggleDrawer(false); openStatsModal()">🛡️ Stats</button>
+        <button class="drawer-item" onclick="toggleDrawer(false); openThemeModal()">🎨 Temi Visivi</button>
+        <button class="drawer-item" onclick="toggleDrawer(false); exportSaveGameCSV()">💾 Salva Partita</button>
+        <button class="drawer-item" onclick="toggleDrawer(false); importSaveGameCSVPrompt()">📂 Carica Partita</button>
+        <button class="drawer-item" onclick="toggleDrawer(false); location.reload()" style="color: var(--accent-gold); border-color: var(--accent-gold);">🏠 Home</button>
+        <button class="drawer-item" onclick="toggleDrawer(false); confirmResetProgress()" style="color: var(--fail-color); border-color: var(--fail-color); margin-top: auto;">🔄 Reset Totale</button>
+    </div>
+
+    <!-- ================= 3. ADMIN / EDITOR SCREEN ================= -->
+    <div id="adminScreen" class="screen">
+        <header>
+            <button class="header-btn" onclick="openNodeEditor(null)">➕ Nuovo Nodo</button>
+            <div id="adminHeaderTitle" class="header-title">Editor Spazioso</div>
+            <button class="header-btn" onclick="returnToHome()" style="color:var(--accent-gold); font-weight:bold;">💾 Fine</button>
+        </header>
+        <div class="container" id="adminNodeListContainer"></div>
+    </div>
+
+    <!-- ================= MODALI ================= -->
+    <div class="modal" id="nodeEditorModal">
+        <div class="modal-content" style="max-width: 500px; max-height: 95vh;">
+            <div class="modal-title" id="nodeEditorModalTitle">Modifica Capitolo / Pagina</div>
+            
+            <label>ID Nodo (es: 1.1.a)</label>
+            <input type="text" id="editNodeId" placeholder="1.1.a">
+            
+            <label>Titolo Banner</label>
+            <input type="text" id="editNodeTitle" placeholder="Capitolo 1.1.a">
+            
+            <label>Testo Narrativo</label>
+            <textarea id="editNodeText" rows="6" placeholder="Scrivi il testo della storia..."></textarea>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px 0;">
+                <span style="font-size:14px; font-weight:bold; color:var(--accent-gold);">Scelte, Modifiche e Skill Points</span>
+                <button class="btn" style="padding:6px 12px; font-size:12px;" onclick="addChoiceRow()">+ Aggiungi Scelta</button>
+            </div>
+            
+            <div id="choicesListContainer" style="display:flex; flex-direction:column; gap:10px; max-height:220px; overflow-y:auto; margin-bottom:16px;"></div>
+
+            <div class="row-end">
+                <button class="btn" onclick="closeModal('nodeEditorModal')">Annulla</button>
+                <button class="btn btn-gold" onclick="saveNodeFromEditor()">Salva Nodo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <div class="modal-title" id="statsModalTitle">Scheda Personaggio</div>
+            
+            <div style="background: rgba(229, 169, 60, 0.1); border: 1px solid var(--accent-gold); padding: 10px; border-radius: 8px; margin-bottom: 14px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:14px; color:var(--accent-gold); font-weight:bold;">Punti Abilità (SP):</span>
+                <span id="availableSkillPoints" style="font-size:18px; color:var(--text-main); font-weight:bold;">0</span>
+            </div>
+
+            <div id="statsListContainer"></div>
+
+            <div id="statConfirmContainer" style="display:none; margin-top:12px;">
+                <button class="btn btn-gold" style="width:100%; margin-bottom:8px;" onclick="confirmSkillPoints()">Conferma Spesa Punti</button>
+                <button class="btn" style="width:100%; font-size:12px;" onclick="cancelSkillPoints()">Annulla modifiche</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+                <button class="btn" style="flex:1;" onclick="exportSaveGameCSV()">Salva su File</button>
+                <button class="btn" style="flex:1;" onclick="closeModal('statsModal')">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE SELEZIONE TEMI -->
+    <div class="modal" id="themeModal">
+        <div class="modal-content">
+            <div class="modal-title">Scegli Tema Visivo</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                <button class="btn" onclick="setTheme('theme-dark-fantasy')">🌌 Dark Fantasy (Default)</button>
+                <button class="btn" onclick="setTheme('theme-pergamena')">📜 Pergamena Antica</button>
+                <button class="btn" onclick="setTheme('theme-cyberpunk')">⚡ Cyberpunk Neon</button>
+                <button class="btn" onclick="setTheme('theme-forest')">🌲 Forest / Natura</button>
+                <button class="btn" onclick="setTheme('theme-blood-moon')">🩸 Blood Moon</button>
+            </div>
+            <button class="btn" style="width:100%;" onclick="closeModal('themeModal')">Chiudi</button>
+        </div>
+    </div>
+
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-title">Accesso Admin</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Inserisci la parola d'ordine:</p>
+            <input type="password" id="adminPwdInput" placeholder="Password (Magium)...">
+            <div class="row-end" style="margin-top:10px;">
+                <button class="btn" onclick="closeModal('passwordModal')">Annulla</button>
+                <button class="btn btn-gold" onclick="verifyAdminPassword()">Accedi</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="createBookModal">
+        <div class="modal-content">
+            <div class="modal-title">Crea Nuovo Libro</div>
+            <label>Titolo del Libro</label>
+            <input type="text" id="newBookTitle" placeholder="Es. Oltre il quarto mondo">
+            <label>Descrizione</label>
+            <textarea id="newBookDesc" rows="3" placeholder="Trama..."></textarea>
+            <label>Protagonista</label>
+            <input type="text" id="newBookProtagonist" value="Sabrina">
+            <div class="row-end" style="margin-top:10px;">
+                <button class="btn" onclick="closeModal('createBookModal')">Annulla</button>
+                <button class="btn btn-gold" onclick="saveNewBook()">Crea</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CURRENT_DB_VERSION = "1.18"; 
+
+        let defaultDb = {
+            lastIdNumber: 1,
+            books: {
+                "00000001": {
+                    id: "00000001",
+                    title: "Oltre il quarto mondo",
+                    description: "Sabrina, colta da un amnesia si ritrova in un viaggio inaspettato",
+                    protagonist: "Sabrina",
+                    stats: [
+                        { id: "forza", name: "Forza", value: 1 },
+                        { id: "tempra", name: "Tempra", value: 1 },
+                        { id: "destrezza", name: "Destrezza", value: 1 },
+                        { id: "riflessi", name: "Riflessi", value: 1 },
+                        { id: "concentrazione", name: "Concentrazione", value: 1 },
+                        { id: "osservazione", name: "Osservazione", value: 1 }
+                    ],
+                    startingNodeId: "1.1.a",
+                    nodes: {
+                        "1.1.a": {
+                            id: "1.1.a",
+                            chapterTitle: "Capitolo 1 - Pagina 1",
+                            text: "Cado come in un pozzo infinito\nI miei occhi sono chiusi… o forse è solo troppo buio per vedere qualcosa.\n\nUna voce mi raggiunge e il suo eco mi scuote – Sabrina! Sabrina!\nMa certo, è il mio nome. Ora lo ricordo ma… dove sono? Vorrei chiederlo alla voce, ma le mie labbra sono sigillate, non esce neanche un fiato e… ho paura.\n\nCome sono finita qui e cosa sta succedendo? La mia mente si riempie di mille domande, fino al momento in cui quella voce mi parla di nuovo – in cosa credi? –\n\nE in quel momento davanti a me compaiono 3 distinte immagini, una spada, un mantello e un libro.\nNon capisco se le vedo davvero o se sono parte della mia immaginazione, però sento in qualche modo di poterle raggiungere. Allora mi allungo verso",
+                            choices: [
+                                { text: "La spada", target: "1.2.a", statMod: "forza", modValue: 2 },
+                                { text: "Il mantello", target: "1.2.a", statMod: "riflessi", modValue: 2 },
+                                { text: "Il libro", target: "1.2.a", statMod: "concentrazione", modValue: 2 }
+                            ]
+                        },
+                        "1.2.a": {
+                            id: "1.2.a",
+                            chapterTitle: "Capitolo 1 - Pagina 2",
+                            text: "Neanche il tempo di allungarmi e ricomincio a cadere in questo abisso, sempre più veloce. Il cuore mi sale in gola e mi sento come risucchiata.\n\nMi stringo a me stessa e chiudo gli occhi più forte che posso... Dopo un tempo apparentemente interminabile… mi sveglio.\n\nIl mio corpo si muove con un sussulto e sento un cigolio infinito accompagnato dallo scalpitare degli zoccoli di un cavallo, mentre il mio corpo viene scosso in maniera irregolare.\n\nQualcosa mi tocca, o meglio qualcuno. Mi scuote le spalle insistentemente e piano piano inizio a sentirlo sussurrare – Sabrina! Sabrina! – allora apro gli occhi e lo vedo. È Ale, ma cosa sta succedendo?\n\nAncora un po’ stordita mi strofino gli occhi – Buongiorno Baby, che succede?\n-Non lo so stellina, ma sembra che ci abbiano catturati.\n\nSolo in quel momento mi rendo conto delle catene che mi legano e del freddo che lasciano sulla mia pelle.",
+                            choices: [
+                                { text: "Provo a liberarmi", target: "3.a", stat: "forza", threshold: 3, failTarget: "3.b" },
+                                { text: "Respiro profondamente", target: "3.c" },
+                                { text: "Grido", target: "3.d" }
+                            ]
+                        },
+                        "3.a": {
+                            id: "3.a",
+                            chapterTitle: "Capitolo 1 - Pagina 3 (Forza Superata)",
+                            text: "Cerco di scuotermi e liberarmi, di strapparmi di dosso queste catene e all’ennesimo strattone uno schiocco. La catena che univa le manette si è rotta. Evidentemente erano più fragili del previsto. Non ho mai visto Ale con un'espressione tanto stupita, che carino <3",
+                            choices: [{ text: "Avanti", target: "4" }]
+                        },
+                        "3.b": {
+                            id: "3.b",
+                            chapterTitle: "Capitolo 1 - Pagina 3 (Forza Fallita)",
+                            text: "Cerco di scuotermi, di liberarmi, di strapparmi di dosso queste catene ma nulla, sembrano più resistenti del previsto.",
+                            choices: [{ text: "Avanti", target: "4" }]
+                        },
+                        "3.c": {
+                            id: "3.c",
+                            chapterTitle: "Capitolo 1 - Pagina 3 (Respiro)",
+                            text: "L’aria si fa pesante nei polmoni mentre realizzo di essere stata catturata. Ale deve aver notato che il mio viso si è fatto buio e per un attimo si scurisce anche il suo.",
+                            choices: [{ text: "Avanti", target: "4" }]
+                        },
+                        "3.d": {
+                            id: "3.d",
+                            chapterTitle: "Capitolo 1 - Pagina 3 (Grido)",
+                            text: "Grido con tutta la forza che ho in corpo – MA IN CHE SENSO? COSA SONO QUESTE MANETTE???-\n\nAle mi guarda confuso, come se urlare non fosse la cosa più normale da fare in questa situazione… proprio non lo capisco.",
+                            choices: [{ text: "Avanti", target: "4" }]
+                        },
+                        "4": {
+                            id: "4",
+                            chapterTitle: "Capitolo 1 - Pagina 4",
+                            text: "Dopo un attimo sorride – pensavo ti piacesse essere ammanettata…\n\nNon riesce mai ad essere serio, però mi fa sempre ridere – Scemo – non dico altro, non c’è bisogno.",
+                            choices: [{ text: "Avanti", target: "4.b" }]
+                        },
+                        "4.b": {
+                            id: "4.b",
+                            chapterTitle: "Capitolo 1 - Pagina 4.b",
+                            text: "– Non mi ricordo niente – dico.\n– Nemmeno io baby. L’ultimo ricordo che ho è una forte luce… e un mal di testa ancora più forte. –\nCi guardiamo attorno: un telo spesso copre il carro che ci trasporta, mentre della paglia morbida riveste il pavimento su cui fino a pochi istanti fa eravamo ancora stesi. I nostri occhi indugiano sul carro fino a posarsi finalmente sui lembi di telo che chiudono il fondo. Ci guardiamo e dopo un cenno scostiamo il telo.\nDiversi uomini seguono il carro, tutti portano casacche blu con ricami dorati mentre stivali di cuoio rosso come il sangue cingono i loro piedi.\nSembrano dei soldati, ma perché siamo loro prigionieri?\nAlle loro spalle rimane lo scheletro di un edificio, nudo, come se fosse stato spogliato delle sue stesse mura. Un bagliore verdastro cinge le rovine, ma la sua fonte ci rimane ignota.",
+                            choices: [{ text: "Avanti", target: "5" }]
+                        },
+                        "5": {
+                            id: "5",
+                            chapterTitle: "Capitolo 1 - Pagina 5",
+                            text: "Il carro riprende a muoversi verso la sua destinazione, ma dopo pochi minuti si arresta bruscamente in una strettoia della città. \nTratteniamo il fiato. Sentiamo le guardie là fuori discutere animatamente con qualcuno, poi i lembi delle tende davanti a noi si aprono di scatto.\nDue ragazzi si sporgono all'interno, portandosi l'indice alle labbra per invitarci a fare silenzio. Ci afferrano per le braccia, ci portano fuori dal carro senza fare rumore e, con gesti rapidi ed esperti, ci liberano dalle manette. Prima che i soldati possano accorgersi di nulla, aprono una pesante grata metallica e ci fanno scendere in dei vecchi canali di scolo inutilizzati per farci sparire.\n\nUna volta al sicuro nel buio umido del sottosuolo, uno dei due si volta verso di noi, ansante: – Tutto bene? Ma si può sapere che diavolo ci facevate là sopra? – ci chiede a bassa voce. \nIo e Ale ci scambiamo uno sguardo smarrito. \n– Noi... in realtà non ci ricordiamo nulla – ammetto, massaggiandomi i polsi indolenziti. – Non sappiamo nemmeno chi siano quei soldati o dove ci troviamo. – \nI due ragazzi si bloccano, fissandoci a bocca aperta. Quello che aveva parlato fa un passo avanti: – State scherzando? Voi siete parte del nostro gruppo! Fate parte della Resistenza! – esclama, visibilmente scosso. – Io sono Mark, e lui è Gino. Non vi ricordate? – \nScuotiamo la testa. Mark sospira, passandosi una mano tra i capelli, e inizia a spiegarci la situazione: – Il regime militare della città si fa ogni giorno più severo. A causa delle loro scelte folli, la popolazione là fuori sta letteralmente morendo di fame. E come se non bastasse, da quando è scoppiata la guerra, tutti i non umani... elfi, nani e chiunque abbia sangue diverso dal loro, vengono perseguitati e rastrellati senza tregua. Voi stavate lottando al nostro fianco per fermare tutto questo. –\n\nLe sue parole mi colpiscono dritte allo stomaco. Mi volto verso Ale per capire cosa ne pensa:",
+                            choices: [
+                                { text: "Fidarci di loro", target: "6.a" },
+                                { text: "Restare scettici", target: "6.b" },
+                                { text: "Rifiutare l'offerta", target: "6.c" }
+                            ]
+                        },
+                        "6.a": {
+                            id: "6.a",
+                            chapterTitle: "Capitolo 1 - Pagina 6.a",
+                            text: "Sento un calore improvviso accendersi nel petto. Nonostante la situazione assurda, la loro determinazione mi trasmette sicurezza.\n– Avete ragione, non possiamo restare qui – dico, facendo un passo avanti.\nAle mi poggia una mano sulla spalla, ancora un po' guardingo ma d'accordo:\n– Va bene, veniamo con voi. Ma muoviamoci. –\nMark annuisce, accennando un sorriso: – Ottima scelta. Seguitemi al rifugio. –",
+                            choices: [{ text: "Avanti", target: "7" }]
+                        },
+                        "6.b": {
+                            id: "6.b",
+                            chapterTitle: "Capitolo 1 - Pagina 6.b",
+                            text: "Mordo il labbro inferiore, indecisa. La loro proposta è logica, ma la prudenza non è mai troppa.\n– Veniamo con voi, ma a una condizione: appena arrivati vogliamo risposte chiare – metto in chiaro, incrociando le braccia.\nMark alza le mani in segno di intesa: – Affare fatto. Parola di Resistenza. –\nIo e Ale ci guardiamo prima di seguirli.",
+                            choices: [{ text: "Avanti", target: "7" }]
+                        },
+                        "6.c": {
+                            id: "6.c",
+                            chapterTitle: "Capitolo 1 - Pagina 6.c",
+                            text: "Faccio un passo indietro, scuotendo la testa con decisione.\n– No. Non vi conosciamo e non sappiamo quali siano le vostre reali intenzioni – dico a voce bassa ma ferma.\nMark ci guarda con un misto di compassione e severità:\n– Liberi di fare come volete. Ma se uscite da quel buco da soli, le guardie vi riprenderanno in cinque minuti. Noi vi offriamo una via d'uscita. –\nAle mi stringe la mano, sospirando: – Ha ragione, baby. Seguiamoli almeno per ora, non abbiamo alternative. Stiamo pronti a tutto. –",
+                            choices: [{ text: "Avanti", target: "7" }]
+                        },
+                        "7": {
+                            id: "7",
+                            chapterTitle: "Capitolo 1 - Pagina 7",
+                            text: "Partiamo seguendo Mark e Gino lungo questi stretti corridoi sotterranei. Camminiamo a lungo nel buio, guidati solo dalla fioca luce di una lanterna, fino a quando non risaliamo una scaletta arrugginita che ci fa sbucare in un altro vicolo cieco della città.\nMark sporge la testa oltre l'angolo e poi si ritrae subito, facendoci cenno di accucciarci dietro delle casse di legno.\n– Maledizione – sussurra. – Dobbiamo fare un pezzo all'esterno, sulla strada principale, prima di poter imboccare l'ingresso dell'altra galleria. –\nTendo l'orecchio: il rumore di stivali pesanti sul selciato è vicinissimo. Data la nostra scomparsa, le guardie stanno pattugliando i dintorni a tappeto.\n– Trovate gli Stranieri! Non possono essere andati lontano! – urla una voce roca poco più avanti.\nAggrotto la fronte e guardo Mark: – \"Gli Stranieri\"? Parlano di noi? –\nMark annuisce, improvvisando con prontezza: – Sì, vi chiamano così perché venite da fuori città... e perché ormai siete una coppia ben nota in questa zona. Siete sulla loro lista nera. –\nGuardo oltre le casse: l'ingresso della prossima galleria è a una cinquantina di metri, ma la strada pullula di pattuglie. Dobbiamo decidere come muoverci:",
+                            choices: [
+                                { text: "Muoversi furtivamente", target: "8.a", stat: "destrezza", threshold: 3, failTarget: "8.b" },
+                                { text: "Correre veloci", target: "8.c", stat: "tempra", threshold: 3, failTarget: "8.d" },
+                                { text: "Creare un diversivo", target: "8.e" }
+                            ]
+                        },
+                        "8.a": {
+                            id: "8.a",
+                            chapterTitle: "Capitolo 1 - Pagina 8.a",
+                            text: "Faccio un respiro lento e stringo la mano di Ale. Aspettiamo il momento esatto in cui le guardie danno le spalle al vicolo e iniziamo a muoverci.\nScivoliamo silenziosi come fantasmi da un'ombra all'altra, schiacciandoci contro i muri freddi e muovendo i passi in perfetta sincronia.\nProprio mentre raggiungiamo l'imboccatura della galleria, però, Gino si ferma sulla soglia e scuote la testa:\n– Andate avanti voi con Mark – bisbiglia. – Le pattuglie sono troppo vicine. Io mi separo un attimo e faccio un giro largo per assicurarmi che nessuno ci segua. –\nPrima che possiamo protestare, sparisce silenziosamente nell'ombra.",
+                            choices: [{ text: "Avanti", target: "10" }]
+                        },
+                        "8.b": {
+                            id: "8.b",
+                            chapterTitle: "Capitolo 1 - Pagina 8.b",
+                            text: "Cerchiamo di avanzare in silenzio rasente il muro, ma la tensione mi gioca un brutto scherzo. Nel tentativo di schivare una pozzanghera, il mio piede urta in pieno una vecchia secchia di metallo abbandonata, che rotola sul selciato con un fracasso assordante.\nIl gelo mi cala addosso. Le guardie si voltano di scatto:\n– Eccoli! Gli Stranieri sono lì! Prendeteli! –\nSiamo stati beccati in pieno!",
+                            choices: [{ text: "Avanti", target: "9" }]
+                        },
+                        "8.c": {
+                            id: "8.c",
+                            chapterTitle: "Capitolo 1 - Pagina 8.c",
+                            text: "– Al mio tre, corriamo come se non ci fosse un domani – sussurro ad Ale.\nLui mi sorride, stringendomi forte la mano: – Sempre pronto, stellina. –\nScattiamo fuori dal vicolo a tutta velocità. Quando le guardie si accorgono di noi, abbiamo già guadagnato metà strada. Sento i polmoni bruciare per lo sforzo e il cuore martellarmi nelle orecchie, ma non cedo di un millimetro.\nAppena varcata la soglia della galleria, però, Gino si arresta di colpo, col fiatone:\n– Con questo baccano avranno capito la direzione! Proseguite con Mark, io resto indietro a confondere le acque nei tunnel! –\nE senza darci il tempo di replicare, si lancia in un vicolo secondario.",
+                            choices: [{ text: "Avanti", target: "10" }]
+                        },
+                        "8.d": {
+                            id: "8.d",
+                            chapterTitle: "Capitolo 1 - Pagina 8.d",
+                            text: "Decidiamo di giocarci il tutto per tutto e scattiamo verso la galleria correndo a più non posso. Ma il risveglio traumatico sul carro si fa sentire subito: dopo appena venti metri il fiato mi si spezza in gola e le gambe diventano pesanti come il piombo.\nRallento vistosamente e le guardie, fresche e allenate, ci tagliano subito la strada sguainando le armi:\n– Fermi dove siete! Siete in trappola! –\nCi hanno beccati!",
+                            choices: [{ text: "Avanti", target: "9" }]
+                        },
+                        "8.e": {
+                            id: "8.e",
+                            chapterTitle: "Capitolo 1 - Pagina 8.e",
+                            text: "– Non ce la faremo mai a passare tutti e quattro lì in mezzo – sussurro. – Ci serve un diversivo. –\nGino sorride e si sistema il colletto:\n– A questo ci penso io. Voi tenetevi pronti a correre verso la galleria appena vi sgombero la visuale! –\nPrima che possiamo ribattere, Gino sgattaiola dal lato opposto della strada, scaglia una pietra contro delle casse e si mette a urlare insulti contro i soldati.\nLe guardie abboccano all'istante e lo inseguono. Con la strada libera, io, Ale e Mark attraversiamo il piazzale inosservati e raggiungiamo l'ingresso della galleria. \nCi fermiamo col fiato sospeso per attenderlo, ma i minuti passano e di Gino non c'è traccia. Mark ci tocca il braccio, invitandoci a scendere nel tunnel prima di essere scoperti.",
+                            choices: [{ text: "Avanti", target: "10" }]
+                        },
+                        "9": {
+                            id: "9",
+                            chapterTitle: "Capitolo 1 - Pagina 9",
+                            text: "Le guardie ci inseguono a distanza ravvicinata, i loro passi pesanti rimbombano nel vicolo insieme al clangore delle spade. Mark ci urla di muoverci, ma i soldati ci stanno letteralmente col fiato sul collo. Dobbiamo reagire in una frazione di secondo:",
+                            choices: [
+                                { text: "Cercare un nascondiglio", target: "9.a" },
+                                { text: "Combattere", target: "9.b" }
+                            ]
+                        },
+                        "9.a": {
+                            id: "9.a",
+                            chapterTitle: "Capitolo 1 - Pagina 9.a",
+                            text: "– Presto, qui dentro! – bisbiglia Ale, tirandomi per un braccio dietro una catasta di vecchi teli, sotto il portico buio di una bottega abbandonata.\nMark e Gino si infilano subito dietro di noi. Mi rannicchio contro il petto di Ale, trattenendo il respiro. La pattuglia sfreccia a pochi centimetri dal nostro nascondiglio. Quando i loro passi si disperdono, usciamo allo scoperto e arriviamo all'ingresso della galleria.\nSulla soglia Gino si ferma:\n– Torneranno indietro a controllare – sussurra deciso. – Voi scendete con Mark. Io mi separo un momento per assicurarmi che non ci seguano. –\nDetto questo, si dilegua tra le ombre del vicolo.",
+                            choices: [{ text: "Avanti", target: "10" }]
+                        },
+                        "9.b": {
+                            id: "9.b",
+                            chapterTitle: "Capitolo 1 - Pagina 9.b",
+                            text: "Stanca di scappare, mi fermo di colpo e stringo i pugni, voltandomi verso i nostri inseguitori. Ale si affianca subito a me, pronto a difendermi a costo della vita.\nMa non appena la pattuglia svolta l'angolo, la dura realtà ci colpisce: non sono due soldati, ma una dozzina di uomini armati fino ai denti. Capiamo all'istante che non abbiamo alcuna speranza.\n– Siete pazzi?! Vi ammazzeranno! – ci grida Gino. – Andate via subito! Mi offro io per distrarli! –\n– Ma Gino, è un suicidio! – protesto.\n– Conosco queste strade meglio delle mie tasche! Correte! –\nSenza lasciarci scelta, Gino si lancia in avanti urlando per attirare su di sé l'intera pattuglia. Mark ci trascina via a forza e corriamo col cuore in gola fino a tuffarci nell'ingresso sotterraneo della vecchia galleria.",
+                            choices: [{ text: "Avanti", target: "10" }]
+                        },
+                        "10": {
+                            id: "10",
+                            chapterTitle: "Capitolo 1 - Pagina 10",
+                            text: "Mentre ci addentriamo nel buio della nuova galleria, non riesco a togliermi dalla testa un forte senso di inquietudine.\n– Mark, dobbiamo tornare indietro o aspettarlo qui – dico con voce tesa, guardandomi alle spalle. – Là fuori è pieno di soldati! –\nAle annuisce: – Non mi piace lasciare indietro chi ci ha appena aiutato. –\nMark ci rivolge uno sguardo rassicurante, poggiando una mano sulla spalla di Ale:\n– Non temete per lui. Gino è una testa calda, ma sa cavarsela. Conosce ogni singolo tombino di questa città: vi assicuro che ci raggiungerà alla nostra base. Ora dobbiamo muoverci. –\n\nProseguiamo il cammino lungo il tunnel sotterraneo. Per spezzare la tensione, inizio a fare qualche domanda.\n– Senti, Mark... se davvero facciamo parte della Resistenza, com'è che anche tu sembri conoscerci solo di fama? – gli chiedo.\nMark esita per una frazione di secondo, aggiustando la presa sulla lanterna:\n– Beh, in realtà non ci conosciamo bene di persona – risponde con calma. – Nella Resistenza siamo organizzati in divisioni indipendenti, per questioni di sicurezza. Voi due fate parte della Sesta Divisione... mentre io e Gino apparteniamo alla Quarta. –",
+                            choices: [{ text: "Avanti", target: "11" }]
+                        },
+                        "11": {
+                            id: "11",
+                            chapterTitle: "Capitolo 1 - Pagina 11",
+                            text: "Camminiamo in silenzio per qualche altro metro. Vedo il modo in cui Mark stringe la mascella quando parla dei soldati: c'è qualcosa di molto personale nel suo sguardo.\n– E tu, Mark? – provo a chiedergli con voce più dolce, avvicinandomi di un passo. – Cosa ti ha spinto a rischiare la vita qui sotto? Hai ancora una famiglia? –\nLui abbassa lo sguardo sulla fiamma della lanterna, chiudendosi nelle spalle.\n– Diciamo solo che questa città mi ha tolto tutto – risponde secco, con un filo di voce.\nFaccio passare un minuto di silenzio, poi gli sfioro delicatamente il braccio:\n– Se vuoi parlarne, noi ti ascoltiamo. –\nMark sospira profondamente. Sente la sincerità nelle mie parole e la sua corazza cede un po'.\n– Avevo una famiglia normale... finché mia madre non si è ammalata gravemente – mormora a fatica, guardando il pavimento umido. – Le cure costavano troppo e noi eravamo ridotti alla fame. Così, per pagare i medici, mio padre ha fatto un gesto disperato... ha venduto mia sorella a un nobile locale, per farle fare la serva a palazzo. –\nMi porto una mano alla bocca, scioccata, mentre Ale mi stringe a sé.",
+                            choices: [{ text: "Avanti", target: "11.b" }]
+                        },
+                        "11.b": {
+                            id: "11.b",
+                            chapterTitle: "Capitolo 1 - Pagina 11.b",
+                            text: "– È servito a salvarla? – chiedo a bassa voce.\nMark scuote lentamente la testa.\n– No. Mia madre morì comunque. Distrutto dai sensi di colpa, mio padre perse completamente la ragione. Iniziò a bere e a sfogarsi su di me, giorno dopo giorno, finché non resse più il peso dei suoi rimorsi e si suicidò. –\nSento un brivido freddo corrermi lungo la schiena.\n– E tua sorella? Sei riuscito a ritrovarla? – sussurro.\nLe nocche di Mark diventano bianche attorno al manico della lanterna.\n– Si dice che sia morta in un \"incidente\" a corte – risponde con un sorriso amaro. – Una bugia a cui nessuno si è opposto. Ecco perché combatto. Il mio unico sogno, ormai, è rendere questa città un posto degno di mia sorella. Lo faccio per lei... e perché nessun altro debba mai più soffrire così. –\n\nIl suo racconto ci lascia senza parole. Dopo altre chiacchiere per alleggerire il peso di quelle confessioni, la galleria termina davanti a un grande portone blindato, incastonato nella pietra.\nMark si ferma, afferra il pesante anello di ferro della maniglia e si volta verso di noi con uno sguardo solenne:\n– Ragazzi... benvenuti alla base della Quarta Divisione. –",
+                            choices: [{ text: "Avanti", target: "12" }]
+                        },
+                        "12": {
+                            id: "12",
+                            chapterTitle: "Capitolo 2 - Pagina 12",
+                            text: "Il portone si apre scricchiolando, rivelando un nuovo capitolo della nostra storia...\n\n(Work in progress - Nuovi capitoli in arrivo!)",
+                            choices: [
+                                { text: "Work in Progress!", target: "RELOAD" }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+
+        let savedVersion = localStorage.getItem('librogame_db_version');
+        let savedData = localStorage.getItem('librogame_db');
+        let db;
+
+        if (savedVersion !== CURRENT_DB_VERSION || !savedData) {
+            db = defaultDb;
+            localStorage.setItem('librogame_db_version', CURRENT_DB_VERSION);
+            localStorage.setItem('librogame_db', JSON.stringify(db));
+        } else {
+            db = JSON.parse(savedData);
+        }
+
+        let savedProgress = localStorage.getItem('librogame_progress');
+        let playerProgress = savedProgress ? JSON.parse(savedProgress) : {};
+
+        let savedTheme = localStorage.getItem('librogame_theme') || 'theme-dark-fantasy';
+        document.body.className = savedTheme;
+
+        function setTheme(themeName) {
+            document.body.className = themeName;
+            localStorage.setItem('librogame_theme', themeName);
+        }
+
+        function openThemeModal() {
+            document.getElementById('themeModal').style.display = 'flex';
+        }
+
+        function saveDb() {
+            localStorage.setItem('librogame_db', JSON.stringify(db));
+        }
+
+        function saveProgress() {
+            localStorage.setItem('librogame_progress', JSON.stringify(playerProgress));
+        }
+
+        function confirmResetProgress() {
+            if (confirm("⚠️ ATTENZIONE: Vuoi davvero resettare tutti i progressi e le statistiche di gioco? Questa operazione è irreversibile!")) {
+                if (confirm("Confermi l'eliminazione definitiva di tutti i dati salvati nel browser?")) {
+                    localStorage.removeItem('librogame_progress');
+                    localStorage.removeItem('librogame_db');
+                    localStorage.removeItem('librogame_db_version');
+                    alert("Progressi resettati con successo!");
+                    location.reload();
+                }
+            }
+        }
+
+        let isAdminMode = false;
+        let activeBookId = null;
+        let editingOriginalNodeId = null;
+        let currentGameState = { 
+            currentNodeId: null, 
+            runtimeStats: {}, 
+            skillPoints: 0, 
+            pendingSpSpend: {}, 
+            notifications: [] 
+        };
+
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('gameDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            if (open) {
+                drawer.classList.add('open');
+                overlay.style.display = 'block';
+            } else {
+                drawer.classList.remove('open');
+                overlay.style.display = 'none';
+            }
+        }
+
+        function exportSaveGameCSV() {
+            if (activeBookId) {
+                playerProgress[activeBookId] = JSON.parse(JSON.stringify(currentGameState));
+                saveProgress();
+            }
+            saveDb();
+
+            let csvLines = [];
+
+            Object.keys(db.books).forEach(bookId => {
+                let book = db.books[bookId];
+                let prog = playerProgress[bookId];
+
+                let nodeId = prog ? prog.currentNodeId : book.startingNodeId;
+                
+                let statValues = [];
+                book.stats.forEach(s => {
+                    let val;
+                    if (prog && prog.runtimeStats && prog.runtimeStats[s.id] !== undefined) {
+                        val = prog.runtimeStats[s.id];
+                    } else {
+                        val = s.value;
+                    }
+                    statValues.push(val);
+                });
+
+                let spValue = (prog && prog.skillPoints !== undefined) ? prog.skillPoints : 0;
+                let escapedTitle = `"${book.title.replace(/"/g, '""')}"`;
+                let row = [book.id, escapedTitle, nodeId, ...statValues, spValue].join(",");
+                csvLines.push(row);
+            });
+
+            let csvContent = csvLines.join("\n");
+            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a");
+            let url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "salvataggio_globale_librogame.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function importSaveGameCSVPrompt() {
+            let input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv, .txt';
+            input.onchange = e => {
+                let file = e.target.files[0];
+                let reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        let content = event.target.result.trim();
+                        let lines = content.split('\n');
+                        
+                        let loadedProgress = {};
+                        let missingBooks = [];
+                        let missingProgressBooks = [];
+
+                        let booksById = db.books;
+                        let bookTitlesInDb = {};
+                        Object.keys(booksById).forEach(bId => {
+                            bookTitlesInDb[booksById[bId].title.trim().toLowerCase()] = bId;
+                        });
+
+                        lines.forEach(line => {
+                            if (!line.trim()) return;
+
+                            let bId, bTitle, nId, stats, sp;
+                            let match = line.match(/^([^,]+),"([^"]+)",(.+)$/);
+                            if (match) {
+                                bId = match[1].trim();
+                                bTitle = match[2].trim();
+                                let rest = match[3].split(',');
+                                nId = rest[0].trim();
+                                stats = rest.slice(1, 7).map(v => parseInt(v));
+                                sp = parseInt(rest[7]);
+                            } else {
+                                let parts = line.split(',');
+                                if (parts.length >= 9) {
+                                    bId = parts[0].trim();
+                                    bTitle = parts[1].trim();
+                                    nId = parts[2].trim();
+                                    stats = parts.slice(3, 9).map(v => parseInt(v));
+                                    sp = parseInt(parts[9]);
+                                } else {
+                                    return;
+                                }
+                            }
+
+                            let targetBookId = null;
+                            if (booksById[bId]) {
+                                targetBookId = bId;
+                            } else {
+                                let normTitle = bTitle.toLowerCase();
+                                if (bookTitlesInDb[normTitle]) {
+                                    targetBookId = bookTitlesInDb[normTitle];
+                                }
+                            }
+
+                            if (targetBookId && booksById[targetBookId]) {
+                                let book = booksById[targetBookId];
+                                let runtimeStats = {};
+                                book.stats.forEach((s, idx) => {
+                                    let val = stats[idx];
+                                    runtimeStats[s.id] = !isNaN(val) ? val : s.value;
+                                });
+
+                                loadedProgress[targetBookId] = {
+                                    currentNodeId: book.nodes[nId] ? nId : book.startingNodeId,
+                                    runtimeStats: runtimeStats,
+                                    skillPoints: !isNaN(sp) ? sp : 0,
+                                    pendingSpSpend: {},
+                                    notifications: []
+                                };
+                            } else {
+                                missingBooks.push(`${bTitle} - Mancante`);
+                            }
+                        });
+
+                        Object.keys(booksById).forEach(bId => {
+                            if (!loadedProgress[bId]) {
+                                missingProgressBooks.push(booksById[bId].title);
+                            }
+                        });
+
+                        playerProgress = loadedProgress;
+                        saveProgress();
+                        saveDb();
+
+                        renderHome();
+                        if (activeBookId && playerProgress[activeBookId]) {
+                            currentGameState = JSON.parse(JSON.stringify(playerProgress[activeBookId]));
+                            if (!currentGameState.notifications) currentGameState.notifications = [];
+                            renderGameNode();
+                        }
+
+                        let alertMsg = "Partita caricata con successo!";
+                        if (missingBooks.length > 0) {
+                            alertMsg += "\n\n⚠️ Libri mancanti nel sistema:\n- " + missingBooks.join("\n- ");
+                        }
+                        if (missingProgressBooks.length > 0) {
+                            alertMsg += "\n\n⚠️ Progressi non trovati per:\n- " + missingProgressBooks.join("\n- ");
+                        }
+                        alert(alertMsg);
+
+                    } catch (err) {
+                        alert("Errore nel file di salvataggio CSV. Il file non è valido.");
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function renderHome() {
+            const container = document.getElementById('bookListContainer');
+            container.innerHTML = "";
+            const bookIds = Object.keys(db.books);
+            document.getElementById('bookCount').innerText = bookIds.length + (bookIds.length === 1 ? " titolo" : " titoli");
+
+            if (bookIds.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:var(--text-muted); margin-top:40px;">Nessun libro disponibile.</p>`;
+                return;
+            }
+
+            bookIds.forEach(id => {
+                const book = db.books[id];
+                const hasProgress = playerProgress[id] && playerProgress[id].currentNodeId;
+                
+                let progressText = "";
+                if (hasProgress) {
+                    const currentNodeId = playerProgress[id].currentNodeId;
+                    const nodeKeys = Object.keys(book.nodes);
+                    const totalNodes = nodeKeys.length;
+                    const currentIndex = nodeKeys.indexOf(currentNodeId);
+                    
+                    if (currentIndex !== -1 && totalNodes > 0) {
+                        let percent = Math.round(((currentIndex + 1) / totalNodes) * 100);
+                        const nodeObj = book.nodes[currentNodeId];
+                        const chapterDisplay = nodeObj ? nodeObj.chapterTitle : currentNodeId;
+                        progressText = `<div class="book-progress">📍 ${chapterDisplay} (${percent}%)</div>`;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div>
+                        <span class="book-id">ID: ${book.id}</span>
+                        <div class="book-title">${book.title}</div>
+                    </div>
+                    <div class="book-desc">${book.description}</div>
+                    ${progressText}
+                    <div class="row-end">
+                        ${isAdminMode ? `
+                            <button class="btn btn-danger" onclick="deleteBook('${book.id}')">Elimina</button>
+                            <button class="btn btn-gold" onclick="openAdminEditor('${book.id}')">Modifica Storia</button>
+                        ` : `
+                            <button class="btn btn-primary" onclick="openOrStartBook('${book.id}')">${hasProgress ? 'Riprendi' : 'Gioca'}</button>
+                        `}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('addBookHeaderBtn').style.display = isAdminMode ? 'block' : 'none';
+            document.getElementById('modeIndicator').innerText = isAdminMode ? "Admin Mode" : "Player Mode";
+        }
+
+        function returnToHome() {
+            if (activeBookId) {
+                playerProgress[activeBookId] = JSON.parse(JSON.stringify(currentGameState));
+                saveProgress();
+            }
+            saveDb();
+            renderHome();
+            switchScreen('homeScreen');
+        }
+
+        function openOrStartBook(bookId) {
+            activeBookId = bookId;
+            const book = db.books[bookId];
+
+            if (playerProgress[bookId] && playerProgress[bookId].currentNodeId) {
+                currentGameState = JSON.parse(JSON.stringify(playerProgress[bookId]));
+                if (!currentGameState.notifications) currentGameState.notifications = [];
+            } else {
+                initFreshGame(book);
+            }
+
+            switchScreen('gameScreen');
+            renderGameNode();
+        }
+
+        function initFreshGame(book) {
+            currentGameState.currentNodeId = book.startingNodeId;
+            currentGameState.runtimeStats = {};
+            currentGameState.skillPoints = 0; 
+            currentGameState.pendingSpSpend = {};
+            currentGameState.notifications = [];
+            book.stats.forEach(s => { currentGameState.runtimeStats[s.id] = s.value; });
+        }
+
+        function renderGameNode() {
+            const book = db.books[activeBookId];
+            const node = book.nodes[currentGameState.currentNodeId];
+
+            if (!node) {
+                document.getElementById('gameStoryText').innerText = "Errore: Nodo '" + currentGameState.currentNodeId + "' non trovato.";
+                document.getElementById('gameChapterTitle').innerText = "Errore";
+                document.getElementById('gameChoicesContainer').innerHTML = "";
+                return;
+            }
+
+            document.getElementById('gameChapterTitle').innerText = node.chapterTitle;
+
+            let htmlContent = "";
+            if (currentGameState.notifications && currentGameState.notifications.length > 0) {
+                currentGameState.notifications.forEach(notif => {
+                    htmlContent += `<span class="notif-text ${notif.cssClass}">${notif.text}</span>`;
+                });
+                currentGameState.notifications = []; 
+            }
+
+            htmlContent += node.text;
+
+            document.getElementById('gameStoryText').innerHTML = htmlContent;
+
+            const choicesBox = document.getElementById('gameChoicesContainer');
+            choicesBox.innerHTML = "";
+
+            node.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.style.textAlign = "left";
+                btn.innerText = choice.text;
+                btn.onclick = () => handleChoice(choice);
+                choicesBox.appendChild(btn);
+            });
+        }
+
+        function handleChoice(choice) {
+            if (choice.target === "RELOAD") {
+                location.reload();
+                return;
+            }
+
+            const book = db.books[activeBookId];
+            currentGameState.notifications = []; 
+
+            if (choice.stat && choice.threshold) {
+                let statVal = currentGameState.runtimeStats[choice.stat] || 0;
+                const passed = statVal >= choice.threshold;
+                let checkText = passed ? `✅ Test Superato (${choice.stat}: ${statVal} ≥ ${choice.threshold})` : `❌ Imprevisto! (${choice.stat}: ${statVal} < ${choice.threshold})`;
+                currentGameState.notifications.push({
+                    text: checkText,
+                    cssClass: passed ? "notif-success" : "notif-fail"
+                });
+                currentGameState.currentNodeId = passed ? choice.target : (choice.failTarget || choice.target);
+            } else {
+                currentGameState.currentNodeId = choice.target;
+            }
+
+            if (currentGameState.currentNodeId === book.startingNodeId) {
+                book.stats.forEach(s => { currentGameState.runtimeStats[s.id] = s.value; });
+                currentGameState.skillPoints = 0;
+            }
+
+            if (choice.statMod && choice.modValue) {
+                let statObj = book.stats.find(s => s.id === choice.statMod);
+                let statName = statObj ? statObj.name : choice.statMod;
+                let val = choice.modValue;
+
+                if (currentGameState.runtimeStats[choice.statMod] !== undefined) {
+                    currentGameState.runtimeStats[choice.statMod] += val;
+                } else {
+                    currentGameState.runtimeStats[choice.statMod] = val;
+                }
+
+                let sign = val > 0 ? `+${val}` : `${val}`;
+                let statMsg = val >= 0 ? `📈 ${statName} aumentata (${sign})` : `📉 ${statName} ridotta (${sign})`;
+                currentGameState.notifications.push({
+                    text: statMsg,
+                    cssClass: val >= 0 ? "notif-success" : "notif-fail"
+                });
+            }
+
+            if (choice.spReward) {
+                currentGameState.skillPoints += choice.spReward;
+                currentGameState.notifications.push({
+                    text: `⭐ Hai ottenuto +${choice.spReward} Punto Abilità (SP)!`,
+                    cssClass: "notif-success"
+                });
+            }
+
+            playerProgress[activeBookId] = JSON.parse(JSON.stringify(currentGameState));
+            saveProgress();
+            saveDb();
+
+            renderGameNode();
+            document.querySelector('.game-text').scrollTo(0, 0);
+        }
+
+        function openStatsModal() {
+            currentGameState.pendingSpSpend = {};
+            updateStatsModalUI();
+            document.getElementById('statsModal').style.display = 'flex';
+        }
+
+        function updateStatsModalUI() {
+            const book = db.books[activeBookId];
+            document.getElementById('statsModalTitle').innerText = `Scheda: ${book.protagonist} (${book.title})`;
+            document.getElementById('availableSkillPoints').innerText = currentGameState.skillPoints;
+
+            let html = "";
+            let totalPending = Object.values(currentGameState.pendingSpSpend).reduce((a, b) => a + b, 0);
+
+            book.stats.forEach(st => {
+                let baseVal = currentGameState.runtimeStats[st.id] !== undefined ? currentGameState.runtimeStats[st.id] : st.value;
+                let pending = currentGameState.pendingSpSpend[st.id] || 0;
+                let displayVal = baseVal + pending;
+
+                html += `
+                    <div class="stat-row">
+                        <div>
+                            <span style="font-weight:500;">${st.name}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="color:var(--accent-gold); font-weight:bold; font-size:16px;">${displayVal}</span>
+                            <button class="btn" style="padding:2px 8px; font-size:14px;" onclick="adjustStat('${st.id}', 1)" ${currentGameState.skillPoints <= 0 ? 'disabled style="opacity:0.5;"' : ''}>+</button>
+                            ${pending > 0 ? `<button class="btn btn-danger" style="padding:2px 6px; font-size:12px;" onclick="adjustStat('${st.id}', -1)">-</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('statsListContainer').innerHTML = html;
+            document.getElementById('statConfirmContainer').style.display = totalPending > 0 ? 'block' : 'none';
+        }
+
+        function adjustStat(statId, amount) {
+            if (amount > 0 && currentGameState.skillPoints > 0) {
+                currentGameState.skillPoints -= 1;
+                currentGameState.pendingSpSpend[statId] = (currentGameState.pendingSpSpend[statId] || 0) + 1;
+            } else if (amount < 0) {
+                let pending = currentGameState.pendingSpSpend[statId] || 0;
+                if (pending > 0) {
+                    currentGameState.pendingSpSpend[statId] = pending - 1;
+                    currentGameState.skillPoints += 1;
+                }
+            }
+            updateStatsModalUI();
+        }
+
+        function confirmSkillPoints() {
+            for (let [statId, val] of Object.entries(currentGameState.pendingSpSpend)) {
+                if (currentGameState.runtimeStats[statId] !== undefined) {
+                    currentGameState.runtimeStats[statId] += val;
+                }
+            }
+            currentGameState.pendingSpSpend = {};
+            playerProgress[activeBookId] = JSON.parse(JSON.stringify(currentGameState));
+            saveProgress();
+            saveDb();
+            updateStatsModalUI();
+            alert("Punti Abilità assegnati con successo!");
+        }
+
+        function cancelSkillPoints() {
+            let totalRefund = Object.values(currentGameState.pendingSpSpend).reduce((a, b) => a + b, 0);
+            currentGameState.skillPoints += totalRefund;
+            currentGameState.pendingSpSpend = {};
+            updateStatsModalUI();
+        }
+
+        function openPasswordModal() {
+            if (!isAdminMode) {
+                document.getElementById('adminPwdInput').value = "";
+                document.getElementById('passwordModal').style.display = 'flex';
+            } else {
+                isAdminMode = false;
+                renderHome();
+            }
+        }
+
+        function verifyAdminPassword() {
+            if (document.getElementById('adminPwdInput').value === "Magium") {
+                isAdminMode = true;
+                closeModal('passwordModal');
+                renderHome();
+                alert("Accesso Admin Autorizzato!");
+            } else {
+                alert("Password errata!");
+            }
+        }
+
+        function openCreateBookModal() {
+            document.getElementById('newBookTitle').value = "";
+            document.getElementById('newBookDesc').value = "";
+            document.getElementById('newBookProtagonist').value = "Sabrina";
+            document.getElementById('createBookModal').style.display = 'flex';
+        }
+
+        function saveNewBook() {
+            const title = document.getElementById('newBookTitle').value.trim();
+            if (!title) return alert("Inserisci un titolo.");
+
+            db.lastIdNumber++;
+            const newId = String(db.lastIdNumber).padStart(8, '0');
+            const startNodeId = "1.1.a";
+
+            db.books[newId] = {
+                id: newId,
+                title: title,
+                description: document.getElementById('newBookDesc').value.trim() || "Nessuna descrizione.",
+                protagonist: document.getElementById('newBookProtagonist').value.trim() || "Sabrina",
+                stats: [
+                    { id: "forza", name: "Forza", value: 1 },
+                    { id: "tempra", name: "Tempra", value: 1 },
+                    { id: "destrezza", name: "Destrezza", value: 1 },
+                    { id: "riflessi", name: "Riflessi", value: 1 },
+                    { id: "concentrazione", name: "Concentrazione", value: 1 },
+                    { id: "osservazione", name: "Osservazione", value: 1 }
+                ],
+                startingNodeId: startNodeId,
+                nodes: {
+                    [startNodeId]: {
+                        id: startNodeId,
+                        chapterTitle: "Capitolo 1 - Pagina 1.a",
+                        text: "Inizio della storia...",
+                        choices: []
+                    }
+                }
+            };
+
+            saveDb();
+            closeModal('createBookModal');
+            renderHome();
+        }
+
+        function deleteBook(id) {
+            if (confirm("Vuoi eliminare questo libro?")) {
+                delete db.books[id];
+                delete playerProgress[id];
+                saveProgress();
+                saveDb();
+                renderHome();
+            }
+        }
+
+        function openAdminEditor(bookId) {
+            activeBookId = bookId;
+            const book = db.books[bookId];
+            document.getElementById('adminHeaderTitle').innerText = `Editor: ${book.title}`;
+            renderAdminNodeList();
+            switchScreen('adminScreen');
+        }
+
+        function renderAdminNodeList() {
+            const book = db.books[activeBookId];
+            const container = document.getElementById('adminNodeListContainer');
+            container.innerHTML = "";
+
+            const sortedNodeIds = Object.keys(book.nodes).sort();
+
+            sortedNodeIds.forEach(nodeId => {
+                const node = book.nodes[nodeId];
+                const card = document.createElement('div');
+                card.className = 'node-card';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:16px; font-weight:bold; color:var(--accent-gold);">ID: ${nodeId}</span>
+                        <span style="font-size:13px; color:var(--text-main);">${node.chapterTitle}</span>
+                    </div>
+                    <div style="font-size:14px; color:var(--text-muted); margin: 8px 0; line-height:1.4;">${node.text}</div>
+                    <div style="font-size:12px; color:var(--accent-blue); margin-bottom:8px;">Opzioni di scelta: ${node.choices.length}</div>
+                    <div class="row-end">
+                        <button class="btn btn-danger" onclick="deleteNode('${nodeId}')">Elimina</button>
+                        <button class="btn btn-gold" onclick="openNodeEditor('${nodeId}')">Modifica Nodo</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openNodeEditor(nodeId) {
+            editingOriginalNodeId = nodeId;
+            const book = db.books[activeBookId];
+
+            if (nodeId) {
+                const node = book.nodes[nodeId];
+                document.getElementById('nodeEditorModalTitle').innerText = "Modifica Nodo: " + nodeId;
+                document.getElementById('editNodeId').value = node.id;
+                document.getElementById('editNodeTitle').value = node.chapterTitle;
+                document.getElementById('editNodeText').value = node.text;
+
+                const choicesContainer = document.getElementById('choicesListContainer');
+                choicesContainer.innerHTML = "";
+                node.choices.forEach(c => addChoiceRow(c));
+            } else {
+                document.getElementById('nodeEditorModalTitle').innerText = "Nuovo Nodo (es. 1.1.a)";
+                document.getElementById('editNodeId').value = "1.1.b";
+                document.getElementById('editNodeTitle').value = "Capitolo - Pagina";
+                document.getElementById('editNodeText').value = "";
+                document.getElementById('choicesListContainer').innerHTML = "";
+            }
+
+            document.getElementById('nodeEditorModal').style.display = 'flex';
+        }
+
+        function addChoiceRow(data = null) {
+            const container = document.getElementById('choicesListContainer');
+            const row = document.createElement('div');
+            row.className = 'choice-editor-box';
+            row.innerHTML = `
+                <label>Testo Pulsante Scelta</label>
+                <input type="text" class="ce-text" placeholder="Es. Attacca con decisione" value="${data ? data.text : ''}">
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <div>
+                        <label>Destinazione (Successo)</label>
+                        <input type="text" class="ce-target" placeholder="es. 1.2.a" value="${data ? data.target : ''}">
+                    </div>
+                    <div>
+                        <label>Check Statistica (opz.)</label>
+                        <input type="text" class="ce-stat" placeholder="es. forza" value="${data ? (data.stat || '') : ''}">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <div>
+                        <label>Soglia Minima</label>
+                        <input type="number" class="ce-thresh" placeholder="es. 3" value="${data ? (data.threshold || '') : ''}">
+                    </div>
+                    <div>
+                        <label>Destinazione (Fallimento)</label>
+                        <input type="text" class="ce-fail" placeholder="es. 3.b" value="${data ? (data.failTarget || '') : ''}">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:4px;">
+                    <div>
+                        <label>Modifica Stat (opz.)</label>
+                        <select class="ce-statmod">
+                            <option value="">Nessuna</option>
+                            <option value="forza" ${data && data.statMod === 'forza' ? 'selected' : ''}>Forza</option>
+                            <option value="tempra" ${data && data.statMod === 'tempra' ? 'selected' : ''}>Tempra</option>
+                            <option value="destrezza" ${data && data.statMod === 'destrezza' ? 'selected' : ''}>Destrezza</option>
+                            <option value="riflessi" ${data && data.statMod === 'riflessi' ? 'selected' : ''}>Riflessi</option>
+                            <option value="concentrazione" ${data && data.statMod === 'concentrazione' ? 'selected' : ''}>Concentrazione</option>
+                            <option value="osservazione" ${data && data.statMod === 'osservazione' ? 'selected' : ''}>Osservazione</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Valore Modifica (+/-)</label>
+                        <input type="number" class="ce-modval" placeholder="es. 2 o -1" value="${data ? (data.modValue || '') : ''}">
+                    </div>
+                </div>
+
+                <div style="margin-top:4px;">
+                    <label>Premio Punti Abilità (SP) alla scelta</label>
+                    <input type="number" class="ce-sp" placeholder="es. 1" value="${data ? (data.spReward || '') : ''}">
+                </div>
+
+                <button class="btn btn-danger" style="padding:4px 8px; font-size:11px; margin-top:8px; width:100%;" onclick="this.parentElement.remove()">Rimuovi Scelta</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function saveNodeFromEditor() {
+            const book = db.books[activeBookId];
+            const newId = document.getElementById('editNodeId').value.trim();
+            const title = document.getElementById('editNodeTitle').value.trim();
+            const text = document.getElementById('editNodeText').value.trim();
+
+            if (!newId || !title) return alert("Inserisci ID (es. 1.1.a) e Titolo.");
+
+            let choices = [];
+            document.querySelectorAll('#choicesListContainer > div').forEach(row => {
+                const text = row.querySelector('.ce-text').value.trim();
+                const target = row.querySelector('.ce-target').value.trim();
+                const stat = row.querySelector('.ce-stat').value.trim();
+                const threshold = parseInt(row.querySelector('.ce-thresh').value);
+                const failTarget = row.querySelector('.ce-fail').value.trim();
+                const statMod = row.querySelector('.ce-statmod').value;
+                const modValue = parseInt(row.querySelector('.ce-modval').value);
+                const spReward = parseInt(row.querySelector('.ce-sp').value);
+
+                if (text && target) {
+                    let choice = { text, target };
+                    if (stat && !isNaN(threshold)) {
+                        choice.stat = stat;
+                        choice.threshold = threshold;
+                        if (failTarget) choice.failTarget = failTarget;
+                    }
+                    if (statMod && !isNaN(modValue)) {
+                        choice.statMod = statMod;
+                        choice.modValue = modValue;
+                    }
+                    if (!isNaN(spReward) && spReward > 0) {
+                        choice.spReward = spReward;
+                    }
+                    choices.push(choice);
+                }
+            });
+
+            if (editingOriginalNodeId && editingOriginalNodeId !== newId) {
+                delete book.nodes[editingOriginalNodeId];
+            }
+
+            book.nodes[newId] = {
+                id: newId,
+                chapterTitle: title,
+                text: text,
+                choices: choices
+            };
+
+            saveDb();
+            closeModal('nodeEditorModal');
+            renderAdminNodeList();
+        }
+
+        function deleteNode(nodeId) {
+            const book = db.books[activeBookId];
+            if (Object.keys(book.nodes).length <= 1) {
+                return alert("Non puoi eliminare l'unico nodo rimasto.");
+            }
+            if (confirm(`Eliminare il nodo ${nodeId}?`)) {
+                delete book.nodes[nodeId];
+                saveDb();
+                renderAdminNodeList();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        renderHome();
+    </script>
+</body>
+</html>
