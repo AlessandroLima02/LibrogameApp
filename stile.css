@@ -71,7 +71,7 @@ body.theme-pergamena .btn-primary { color: #2C221E; }
 .btn-danger { background-color: var(--fail-color); color: #fff; border: none; }
 .row-end { display: flex; justify-content: flex-end; gap: 8px; }
 
-/* FIX DEFINITIVO SOVRAPPOSIZIONE TESTO: Display a blocco invece di Flexbox */
+/* LAYOUT SCORREVOLE GIOCO - BUG SOVRAPPOSIZIONE RISOLTO */
 .game-scroll-area {
     flex: 1 1 0%;
     overflow-y: auto;
@@ -81,13 +81,13 @@ body.theme-pergamena .btn-primary { color: #2C221E; }
 }
 
 .game-text { 
-    /* Spinge i bottoni giù per la grandezza di 1 schermo, ma si allunga naturalmente se il testo è di più */
-    min-height: calc(100dvh - 56px); 
-    padding: 20px 20px 40px 20px; 
+    padding: 20px 20px 30px 20px; 
     line-height: 1.6; 
     font-size: 16px; 
     white-space: pre-wrap; 
     display: block;
+    /* Ho rimosso il min-height che causava il bug. 
+       Ora il testo si adatta naturalmente al proprio contenuto! */
 }
 
 .notif-text { font-weight: bold; font-size: 15px; margin-bottom: 12px; display: block; }
@@ -95,7 +95,7 @@ body.theme-pergamena .btn-primary { color: #2C221E; }
 .notif-fail { color: var(--fail-color); }
 
 .choices-box { 
-    padding: 16px; 
+    padding: 16px 16px 40px 16px; /* Ho aggiunto un po' di margine in basso per i cellulari */
     background-color: var(--surface-color); 
     border-top: 1px solid rgba(0,0,0,0.1); 
     display: flex; 
