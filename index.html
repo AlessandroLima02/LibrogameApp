@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Librogame Hub - Oltre il quarto mondo</title>
-    <!-- Richiama il file dello stile -->
+    <title>Biblioteca Librogame</title>
     <link rel="stylesheet" href="stile.css">
 </head>
 <body class="theme-dark-fantasy">
@@ -24,6 +23,8 @@
                 </div>
                 <span id="bookCount" style="font-size: 13px; color: var(--text-muted);">0 titoli</span>
             </div>
+            <!-- Loading indicator per il caricamento dinamico -->
+            <div id="loadingIndicator" style="display: none; text-align: center; color: var(--accent-gold); margin-bottom: 10px;">Caricamento storia in corso...</div>
             <div id="bookListContainer"></div>
         </div>
     </div>
@@ -35,7 +36,6 @@
             <div id="gameChapterTitle" class="header-title">Capitolo</div>
             <div style="width: 50px;"></div>
         </header>
-        <!-- L'intera area di testo + scelte scrollabile -->
         <div class="game-scroll-area" id="gameScrollArea">
             <div class="game-text" id="gameStoryText"></div>
             <div class="choices-box" id="gameChoicesContainer"></div>
@@ -50,39 +50,23 @@
         <button class="drawer-item" onclick="toggleDrawer(false); openThemeModal()">🎨 Temi Visivi</button>
         <button class="drawer-item" onclick="toggleDrawer(false); exportSaveGameCSV()">💾 Salva Partita</button>
         <button class="drawer-item" onclick="toggleDrawer(false); importSaveGameCSVPrompt()">📂 Carica Partita</button>
-        <button class="drawer-item" onclick="toggleDrawer(false); location.reload()" style="color: var(--accent-gold); border-color: var(--accent-gold);">🏠 Home</button>
+        <button class="drawer-item" onclick="toggleDrawer(false); returnToHome()" style="color: var(--accent-gold); border-color: var(--accent-gold);">🏠 Home</button>
         <button class="drawer-item" onclick="toggleDrawer(false); confirmResetProgress()" style="color: var(--fail-color); border-color: var(--fail-color); margin-top: auto;">🔄 Reset Totale</button>
     </div>
 
-    <!-- 3. ADMIN / EDITOR SCREEN -->
+    <!-- 3. ADMIN / EDITOR SCREEN (Opzionale/In Sviluppo) -->
     <div id="adminScreen" class="screen">
         <header>
             <button class="header-btn" onclick="openNodeEditor(null)">➕ Nuovo Nodo</button>
-            <div id="adminHeaderTitle" class="header-title">Editor Spazioso</div>
+            <div id="adminHeaderTitle" class="header-title">Editor Disabilitato in versione Multi-File</div>
             <button class="header-btn" onclick="returnToHome()" style="color:var(--accent-gold); font-weight:bold;">💾 Fine</button>
         </header>
-        <div class="container" id="adminNodeListContainer"></div>
-    </div>
-
-    <!-- MODALI (Finestre a comparsa) -->
-    <div class="modal" id="nodeEditorModal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-title" id="nodeEditorModalTitle">Modifica Capitolo / Pagina</div>
-            <label>ID Nodo (es: 1.1.a)</label><input type="text" id="editNodeId" placeholder="1.1.a">
-            <label>Titolo Banner</label><input type="text" id="editNodeTitle" placeholder="Capitolo 1.1.a">
-            <label>Testo Narrativo</label><textarea id="editNodeText" rows="6" placeholder="Scrivi il testo..."></textarea>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px 0;">
-                <span style="font-size:14px; font-weight:bold; color:var(--accent-gold);">Scelte, Modifiche e Skill Points</span>
-                <button class="btn" style="padding:6px 12px; font-size:12px;" onclick="addChoiceRow()">+ Aggiungi Scelta</button>
-            </div>
-            <div id="choicesListContainer" style="display:flex; flex-direction:column; gap:10px; max-height:220px; overflow-y:auto; margin-bottom:16px;"></div>
-            <div class="row-end">
-                <button class="btn" onclick="closeModal('nodeEditorModal')">Annulla</button>
-                <button class="btn btn-gold" onclick="saveNodeFromEditor()">Salva Nodo</button>
-            </div>
+        <div class="container">
+            <p style="color: var(--text-muted); text-align: center; margin-top: 20px;">L'editor visivo è disabilitato in questa versione. Modifica direttamente i file .js della storia per aggiungere nodi.</p>
         </div>
     </div>
 
+    <!-- MODALI -->
     <div class="modal" id="statsModal">
         <div class="modal-content">
             <div class="modal-title" id="statsModalTitle">Scheda Personaggio</div>
@@ -119,7 +103,6 @@
     <div class="modal" id="passwordModal">
         <div class="modal-content">
             <div class="modal-title">Accesso Admin</div>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Inserisci la parola d'ordine:</p>
             <input type="password" id="adminPwdInput" placeholder="Password (Magium)...">
             <div class="row-end" style="margin-top:10px;">
                 <button class="btn" onclick="closeModal('passwordModal')">Annulla</button>
@@ -128,21 +111,9 @@
         </div>
     </div>
 
-    <div class="modal" id="createBookModal">
-        <div class="modal-content">
-            <div class="modal-title">Crea Nuovo Libro</div>
-            <label>Titolo del Libro</label><input type="text" id="newBookTitle" placeholder="Es. Oltre il quarto mondo">
-            <label>Descrizione</label><textarea id="newBookDesc" rows="3" placeholder="Trama..."></textarea>
-            <label>Protagonista</label><input type="text" id="newBookProtagonist" value="Sabrina">
-            <div class="row-end" style="margin-top:10px;">
-                <button class="btn" onclick="closeModal('createBookModal')">Annulla</button>
-                <button class="btn btn-gold" onclick="saveNewBook()">Crea</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Richiamo i file Javascript (Prima la storia, poi il motore di gioco) -->
-    <script src="storia.js"></script>
+    <!-- 1. Carica prima il catalogo -->
+    <script src="catalogo.js"></script>
+    <!-- 2. Carica la logica base -->
     <script src="app.js"></script>
 
 </body>
