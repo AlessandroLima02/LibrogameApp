@@ -1,6 +1,5 @@
 const CURRENT_VERSION = "2.1";
 
-// Ripristina i progressi di gioco dell'utente (statistiche, posizione, ecc.)
 let savedProgress = localStorage.getItem('librogame_progress');
 let playerProgress = savedProgress ? JSON.parse(savedProgress) : {};
 
@@ -53,72 +52,93 @@ function exportSaveGameCSV() {
     document.body.removeChild(link);
 }
 
-// Funzione aggiornata per dispositivi mobili (iOS e Android)
+// FIX SALVATAGGI MOBILE: Riconosce i CSV europei e resetta la memoria a ogni click
 function importSaveGameCSVPrompt() {
     let input = document.getElementById('csvMobileInput');
+    
     if (!input) {
-        input = document.createElement('input');
-        input.type = 'file';
-        input.id = 'csvMobileInput';
-        // NESSUN filtro accept, così il telefono non "ingrigisce" i file CSV
-        input.style.display = 'none';
-        document.body.appendChild(input);
-        
-        input.onchange = e => {
-            if (!e.target.files.length) return;
-            let file = e.target.files[0];
-            let reader = new FileReader();
-            reader.onload = event => {
-                try {
-                    let lines = event.target.result.trim().split('\n');
-                    let loadedProgress = {};
-                    let bookTitlesInDb = {};
-                    Object.keys(bookCatalog).forEach(bId => bookTitlesInDb[bookCatalog[bId].title.trim().toLowerCase()] = bId);
+        alert("Errore di sistema: input caricamento non trovato.");
+        return;
+    }
 
-                    lines.forEach(line => {
-                        if (!line.trim()) return;
-                        let bId, bTitle, nId, stats, sp;
-                        let match = line.match(/^([^,]+),"([^"]+)",(.+)$/);
-                        if (match) {
-                            bId = match[1].trim(); bTitle = match[2].trim();
-                            let rest = match[3].split(',');
-                            nId = rest[0].trim(); stats = rest.slice(1, 7).map(v => parseInt(v)); sp = parseInt(rest[7]);
-                        } else {
-                            let parts = line.split(',');
-                            if (parts.length >= 9) {
-                                bId = parts[0].trim(); bTitle = parts[1].trim(); nId = parts[2].trim();
-                                stats = parts.slice(3, 9).map(v => parseInt(v)); sp = parseInt(parts[9]);
-                            } else return;
-                        }
-                        let targetBookId = bookCatalog[bId] ? bId : bookTitlesInDb[bTitle.toLowerCase()];
-                        if (targetBookId && bookCatalog[targetBookId]) {
-                            let book = bookCatalog[targetBookId];
-                            let runtimeStats = {};
-                            book.stats.forEach((s, idx) => runtimeStats[s.id] = !isNaN(stats[idx]) ? stats[idx] : s.value);
-                            loadedProgress[targetBookId] = { currentNodeId: nId || book.startingNodeId, runtimeStats: runtimeStats, skillPoints: !isNaN(sp) ? sp : 0, pendingSpSpend: {}, notifications: [] };
-                        }
-                    });
+    // 1. Resetta il valore PRIMA del caricamento (così puoi selezionare anche lo stesso file 2 volte di fila)
+    input.value = '';
+
+    input.onchange = e => {
+        if (!e.target.files.length) return;
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        
+        reader.onload = event => {
+            try {
+                let text = event.target.result.trim();
+                if (!text) {
+                    alert("Attenzione: Il file selezionato è completamente vuoto.");
+                    return;
+                }
+
+                let lines = text.split('\n');
+                let loadedProgress = {};
+                let bookTitlesInDb = {};
+                Object.keys(bookCatalog).forEach(bId => bookTitlesInDb[bookCatalog[bId].title.trim().toLowerCase()] = bId);
+
+                let salvataggiTrovati = 0;
+
+                lines.forEach(line => {
+                    if (!line.trim()) return;
                     
-                    playerProgress = loadedProgress; 
-                    saveProgress(); 
-                    renderHome();
+                    // Sostituisce eventuali punti e virgola (standard europeo) con virgole normali per non far bloccare il sistema
+                    let cleanLine = line.replace(/;/g, ',');
                     
-                    if (activeBookId && playerProgress[activeBookId]) {
-                        currentGameState = JSON.parse(JSON.stringify(playerProgress[activeBookId]));
-                        if (!currentGameState.notifications) currentGameState.notifications = [];
-                        renderGameNode();
+                    let bId, bTitle, nId, stats, sp;
+                    let match = cleanLine.match(/^([^,]+),"([^"]+)",(.+)$/);
+                    
+                    if (match) {
+                        bId = match[1].trim(); bTitle = match[2].trim();
+                        let rest = match[3].split(',');
+                        nId = rest[0].trim(); stats = rest.slice(1, 7).map(v => parseInt(v)); sp = parseInt(rest[7]);
+                    } else {
+                        let parts = cleanLine.split(',');
+                        if (parts.length >= 9) {
+                            bId = parts[0].trim(); bTitle = parts[1].trim(); nId = parts[2].trim();
+                            stats = parts.slice(3, 9).map(v => parseInt(v)); sp = parseInt(parts[9]);
+                        } else return;
                     }
-                    alert("Partita caricata con successo!");
-                } catch (err) { 
-                    alert("Errore nel file di salvataggio CSV. Assicurati che sia il file corretto."); 
+                    
+                    salvataggiTrovati++;
+                    
+                    let targetBookId = bookCatalog[bId] ? bId : bookTitlesInDb[bTitle.toLowerCase()];
+                    if (targetBookId && bookCatalog[targetBookId]) {
+                        let book = bookCatalog[targetBookId];
+                        let runtimeStats = {};
+                        book.stats.forEach((s, idx) => runtimeStats[s.id] = !isNaN(stats[idx]) ? stats[idx] : s.value);
+                        loadedProgress[targetBookId] = { currentNodeId: nId || book.startingNodeId, runtimeStats: runtimeStats, skillPoints: !isNaN(sp) ? sp : 0, pendingSpSpend: {}, notifications: [] };
+                    }
+                });
+                
+                if (salvataggiTrovati === 0) {
+                    alert("Errore: Il file non contiene salvataggi compatibili col gioco.");
+                    return;
                 }
                 
-                // Resetta l'input per permettere successivi caricamenti
-                input.value = '';
-            };
-            reader.readAsText(file);
+                playerProgress = loadedProgress; 
+                saveProgress(); 
+                renderHome();
+                
+                if (activeBookId && playerProgress[activeBookId]) {
+                    currentGameState = JSON.parse(JSON.stringify(playerProgress[activeBookId]));
+                    if (!currentGameState.notifications) currentGameState.notifications = [];
+                    renderGameNode();
+                }
+                alert("Partita caricata con successo!");
+            } catch (err) { 
+                alert("Errore critico nella lettura del file. Potrebbe essere danneggiato."); 
+            }
         };
-    }
+        reader.readAsText(file);
+    };
+    
+    // Attiva il click sul pulsante nascosto
     input.click();
 }
 
@@ -158,21 +178,19 @@ function returnToHome() {
     renderHome(); switchScreen('homeScreen');
 }
 
-// LOGICA DI CARICAMENTO DINAMICO DEI LIBRI
+// LOGICA DI CARICAMENTO DINAMICO ANTI-CACHE
 function openOrStartBook(bookId) {
     document.getElementById('loadingIndicator').style.display = 'block';
     
-    // Se il libro è già stato caricato in memoria durante questa sessione, salta il download
     if (window.loadedBooks && window.loadedBooks[bookId]) {
         document.getElementById('loadingIndicator').style.display = 'none';
         launchBook(bookId);
         return;
     }
 
-    // Scarica dinamicamente il file JS della storia aggiungendo l'anti-cache
     let script = document.createElement('script');
     
-    // Aggiungiamo un timestamp per forzare il download dell'ultima versione
+    // Il timestamp obbliga il cellulare a scaricare i testi sempre aggiornati
     const cacheBuster = new Date().getTime();
     script.src = `${bookId}.js?v=${cacheBuster}`;
     
@@ -308,8 +326,7 @@ function cancelSkillPoints() { currentGameState.skillPoints += Object.values(cur
 function openPasswordModal() { if (!isAdminMode) { document.getElementById('adminPwdInput').value = ""; document.getElementById('passwordModal').style.display = 'flex'; } else { isAdminMode = false; renderHome(); } }
 function verifyAdminPassword() { if (document.getElementById('adminPwdInput').value === "Magium") { isAdminMode = true; closeModal('passwordModal'); renderHome(); } else alert("Password errata!"); }
 
-// L'editor visivo di creazione/modifica è disabilitato nella versione multi-file
+// L'editor visivo di creazione/modifica è disabilitato
 function openAdminEditor() { alert("Nella versione Multi-File, aggiungi i nodi modificando direttamente i file .js della storia."); }
 
-// Avvia l'interfaccia
 renderHome();
