@@ -2,7 +2,6 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- FIX MOBILE: Impedisce lo zoom involontario e fissa la larghezza per simulare un'app nativa -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Librogame Hub - Oltre il quarto mondo</title>
     <style>
@@ -69,7 +68,6 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         
-        /* FIX MOBILE: Lock assoluto dello schermo a 100% per impedire rimbalzi del browser */
         html, body {
             height: 100%;
             width: 100%;
@@ -81,7 +79,6 @@
             color: var(--text-main); 
             display: flex; 
             flex-direction: column; 
-            height: 100dvh; 
             max-width: 600px; 
             margin: 0 auto; 
             position: relative;
@@ -93,21 +90,17 @@
         .header-title { font-size: 16px; font-weight: bold; color: var(--text-main); text-align: center; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
         .mode-indicator { font-size: 13px; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 4px; background: rgba(0,0,0,0.05); }
         
-        /* FIX MOBILE: flex 1 1 0% forza il rispetto dei limiti su Safari/iOS */
         .screen { display: none; flex: 1 1 0%; flex-direction: column; overflow: hidden; min-height: 0; width: 100%; }
         .screen.active { display: flex; }
         
-        /* FIX MOBILE: -webkit-overflow-scrolling abilita lo scroll inerziale su iOS */
         .container { flex: 1 1 0%; overflow-y: auto; padding: 16px; min-height: 0; -webkit-overflow-scrolling: touch; }
 
-        /* Card */
         .book-card, .node-card { background-color: var(--card-color); border: 1px solid var(--accent-gold); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
         .book-title { font-size: 18px; font-weight: bold; color: var(--accent-gold); margin-bottom: 6px; }
         .book-id { font-size: 12px; color: var(--text-muted); float: right; }
         .book-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4; }
         .book-progress { font-size: 13px; color: var(--accent-gold); font-weight: 500; margin-bottom: 10px; }
         
-        /* Bottoni */
         .btn { background-color: var(--surface-color); color: var(--text-main); border: 1px solid var(--accent-gold); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; text-align: center; }
         .btn-primary { background-color: var(--accent-gold); color: #FFF; font-weight: bold; border: none; }
         body.theme-pergamena .btn-primary { color: #2C221E; }
@@ -115,17 +108,13 @@
         .btn-danger { background-color: var(--fail-color); color: #fff; border: none; }
         .row-end { display: flex; justify-content: flex-end; gap: 8px; }
 
-        /* Lettura Gioco & Scritte Notifiche Testuali */
-        /* FIX MOBILE: flex: 1 1 0% e scrolling inerziale per far comparire la scrollbar */
-        .game-text { flex: 1 1 0%; overflow-y: auto; padding: 20px; line-height: 1.6; font-size: 16px; white-space: pre-wrap; min-height: 0; -webkit-overflow-scrolling: touch; }
+        .game-text { flex: 1 1 auto; overflow-y: auto; padding: 20px; line-height: 1.6; font-size: 16px; white-space: pre-wrap; min-height: 0; -webkit-overflow-scrolling: touch; }
         .notif-text { font-weight: bold; font-size: 15px; margin-bottom: 12px; display: block; }
         .notif-success { color: var(--success-color); }
         .notif-fail { color: var(--fail-color); }
         
-        /* FIX MOBILE: flex-shrink: 0 impedisce ai bottoni di essere inghiottiti sotto lo schermo */
-        .choices-box { padding: 16px; background-color: var(--surface-color); border-top: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; max-height: 45vh; overflow-y: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
+        .choices-box { padding: 16px; background-color: var(--surface-color); border-top: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; z-index: 10; max-height: 45vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-        /* Menu Laterale (Drawer) */
         .drawer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 90; }
         .drawer { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: var(--surface-color); border-right: 1px solid var(--accent-gold); z-index: 100; display: flex; flex-direction: column; transition: left 0.3s ease; padding: 20px; gap: 12px; }
         .drawer.open { left: 0; }
@@ -133,7 +122,6 @@
         .drawer-item { background: var(--card-color); color: var(--text-main); border: 1px solid var(--accent-gold); padding: 12px; border-radius: 8px; text-align: left; font-size: 15px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 10px; }
         .drawer-item:hover { opacity: 0.8; }
 
-        /* Modali */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 110; padding: 20px; }
         .modal-content { background: var(--surface-color); width: 100%; max-width: 400px; padding: 20px; border-radius: 12px; border: 1px solid var(--accent-gold); max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .modal-title { font-size: 18px; font-weight: bold; color: var(--accent-gold); margin-bottom: 16px; }
@@ -201,7 +189,7 @@
 
     <!-- ================= MODALI ================= -->
     <div class="modal" id="nodeEditorModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 500px;">
             <div class="modal-title" id="nodeEditorModalTitle">Modifica Capitolo / Pagina</div>
             
             <label>ID Nodo (es: 1.1.a)</label>
@@ -294,7 +282,7 @@
     </div>
 
     <script>
-        const CURRENT_DB_VERSION = "1.22"; 
+        const CURRENT_DB_VERSION = "1.23"; 
 
         let defaultDb = {
             lastIdNumber: 1,
@@ -397,7 +385,7 @@
                         "5": {
                             id: "5",
                             chapterTitle: "Capitolo 1 - Pagina 5",
-                            text: "Il carro riprende a muoversi verso la sua destinazione, ma dopo pochi minuti si arresta bruscamente in una strettoia della città. \nTratteniamo il fiato. Sentiamo le guardie là fuori discutere animatamente con qualcuno, poi i lembi delle tende davanti a noi si aprono di scatto.\nDue ragazzi si sporgono all'interno, portandosi l'indice alle labbra per invitarci a fare silenzio. Ci afferrano per le braccia, ci portano fuori dal carro senza fare rumore e, con gesti rapidi ed esperti, ci liberano dalle manette. Prima che i soldati possano accorgersi di nulla, aprono una pesante grata metallica e ci fanno scendere in dei vecchi canali di scolo inutilizzati per farci sparire.\n\nUna volta al sicuro nel buio umido del sottosuolo, uno dei due si volta verso di noi, ansante: – Tutto bene? Ma si può sapere che cazzo ci facevate là sopra? – ci chiede a bassa voce. \nIo e Ale ci scambiamo uno sguardo smarrito. \n– Noi... in realtà non ci ricordiamo nulla – ammetto, massaggiandomi i polsi indolenziti. – Non sappiamo nemmeno chi siano quei soldati o dove ci troviamo. – \nI due ragazzi si bloccano, fissandoci a bocca aperta. Quello che aveva parlato fa un passo avanti: – State scherzando? Voi siete parte del nostro gruppo! Fate parte della Resistenza! – esclama, visibilmente scosso. – Io sono Mark, e lui è Gino. Non vi ricordate? – \nScuotiamo la testa. Mark sospira, passandosi una mano tra i capelli, e inizia a spiegarci la situazione: – Il regime militare della città si fa ogni giorno più severo. A causa delle loro scelte folli, la popolazione là fuori sta letteralmente morendo di fame. E come se non bastasse, da quando è scoppiata la guerra, tutti i non umani... elfi, nani e chiunque abbia sangue diverso dal loro, vengono perseguitati e rastrellati senza tregua. Voi stavate lottando al nostro fianco per fermare tutto questo. –\n\nLe sue parole mi colpiscono dritte allo stomaco. Mi volto verso Ale per capire cosa ne pensa:",
+                            text: "Il carro riprende a muoversi verso la sua destinazione, ma dopo pochi minuti si arresta bruscamente in una strettoia della città. \nTratteniamo il fiato. Sentiamo le guardie là fuori discutere animatamente con qualcuno, poi i lembi delle tende davanti a noi si aprono di scatto.\nDue ragazzi si sporgono all'interno, portandosi l'indice alle labbra per invitarci a fare silenzio. Ci afferrano per le braccia, ci portano fuori dal carro senza fare rumore e, con gesti rapidi ed esperti, ci liberano dalle manette. Prima che i soldati possano accorgersi di nulla, aprono una pesante grata metallica e ci fanno scendere in dei vecchi canali di scolo inutilizzati per farci sparire.\n\nUna volta al sicuro nel buio umido del sottosuolo, uno dei due si volta verso di noi, ansante: – Tutto bene? Ma si può sapere che diavolo ci facevate là sopra? – ci chiede a bassa voce. \nIo e Ale ci scambiamo uno sguardo smarrito. \n– Noi... in realtà non ci ricordiamo nulla – ammetto, massaggiandomi i polsi indolenziti. – Non sappiamo nemmeno chi siano quei soldati o dove ci troviamo. – \nI due ragazzi si bloccano, fissandoci a bocca aperta. Quello che aveva parlato fa un passo avanti: – State scherzando? Voi siete parte del nostro gruppo! Fate parte della Resistenza! – esclama, visibilmente scosso. – Io sono Mark, e lui è Gino. Non vi ricordate? – \nScuotiamo la testa. Mark sospira, passandosi una mano tra i capelli, e inizia a spiegarci la situazione: – Il regime militare della città si fa ogni giorno più severo. A causa delle loro scelte folli, la popolazione là fuori sta letteralmente morendo di fame. E come se non bastasse, da quando è scoppiata la guerra, tutti i non umani... elfi, nani e chiunque abbia sangue diverso dal loro, vengono perseguitati e rastrellati senza tregua. Voi stavate lottando al nostro fianco per fermare tutto questo. –\n\nLe sue parole mi colpiscono dritte allo stomaco. Mi volto verso Ale per capire cosa ne pensa:",
                             choices: [
                                 { text: "Fidarci di loro", target: "6.a" },
                                 { text: "Restare scettici", target: "6.b" },
