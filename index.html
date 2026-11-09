@@ -67,16 +67,18 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; max-width: 600px; margin: 0 auto; overflow: hidden; transition: background 0.3s, color 0.3s; }
-        header { background-color: var(--surface-color); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); height: 56px; }
+        
+        /* FIX MOBILE: 100dvh permette alla pagina di adattarsi all'interfaccia a comparsa del browser */
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 600px; margin: 0 auto; overflow: hidden; transition: background 0.3s, color 0.3s; }
+        header { background-color: var(--surface-color); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); height: 56px; flex-shrink: 0; }
         .header-btn { background: none; border: none; color: var(--accent-gold); font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
         .header-title { font-size: 16px; font-weight: bold; color: var(--text-main); text-align: center; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
         .mode-indicator { font-size: 13px; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 4px; background: rgba(0,0,0,0.05); }
         
-        /* Schermate */
-        .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+        /* Schermate: Aggiunto min-height: 0 per forzare lo scorrimento interno nei figli */
+        .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
         .screen.active { display: flex; }
-        .container { flex: 1; overflow-y: auto; padding: 16px; }
+        .container { flex: 1; overflow-y: auto; padding: 16px; min-height: 0; }
 
         /* Card */
         .book-card, .node-card { background-color: var(--card-color); border: 1px solid var(--accent-gold); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
@@ -94,11 +96,14 @@
         .row-end { display: flex; justify-content: flex-end; gap: 8px; }
 
         /* Lettura Gioco & Scritte Notifiche Testuali */
-        .game-text { flex: 1; overflow-y: auto; padding: 20px; line-height: 1.6; font-size: 16px; white-space: pre-wrap; }
+        /* FIX MOBILE: min-height: 0 assicura che il blocco di testo si stringa e faccia comparire la scrollbar */
+        .game-text { flex: 1; overflow-y: auto; padding: 20px; line-height: 1.6; font-size: 16px; white-space: pre-wrap; min-height: 0; }
         .notif-text { font-weight: bold; font-size: 15px; margin-bottom: 12px; display: block; }
         .notif-success { color: var(--success-color); }
         .notif-fail { color: var(--fail-color); }
-        .choices-box { padding: 16px; background-color: var(--surface-color); border-top: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; max-height: 35vh; overflow-y: auto; }
+        
+        /* FIX MOBILE: flex-shrink: 0 impedisce che i pulsanti vengano "schiacciati" fuori dallo schermo */
+        .choices-box { padding: 16px; background-color: var(--surface-color); border-top: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; max-height: 45vh; overflow-y: auto; flex-shrink: 0; }
 
         /* Menu Laterale (Drawer) */
         .drawer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 90; }
@@ -269,7 +274,7 @@
     </div>
 
     <script>
-        const CURRENT_DB_VERSION = "1.20"; 
+        const CURRENT_DB_VERSION = "1.21"; 
 
         let defaultDb = {
             lastIdNumber: 1,
