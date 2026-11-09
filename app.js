@@ -1,4 +1,4 @@
-const CURRENT_VERSION = "2.0";
+const CURRENT_VERSION = "2.1";
 
 // Ripristina i progressi di gioco dell'utente (statistiche, posizione, ecc.)
 let savedProgress = localStorage.getItem('librogame_progress');
@@ -169,9 +169,13 @@ function openOrStartBook(bookId) {
         return;
     }
 
-    // Scarica dinamicamente il file JS della storia (es. "00000001.js")
+    // Scarica dinamicamente il file JS della storia aggiungendo l'anti-cache
     let script = document.createElement('script');
-    script.src = `${bookId}.js`;
+    
+    // Aggiungiamo un timestamp per forzare il download dell'ultima versione
+    const cacheBuster = new Date().getTime();
+    script.src = `${bookId}.js?v=${cacheBuster}`;
+    
     script.onload = () => {
         document.getElementById('loadingIndicator').style.display = 'none';
         if (window.loadedBooks && window.loadedBooks[bookId]) {
@@ -304,7 +308,7 @@ function cancelSkillPoints() { currentGameState.skillPoints += Object.values(cur
 function openPasswordModal() { if (!isAdminMode) { document.getElementById('adminPwdInput').value = ""; document.getElementById('passwordModal').style.display = 'flex'; } else { isAdminMode = false; renderHome(); } }
 function verifyAdminPassword() { if (document.getElementById('adminPwdInput').value === "Magium") { isAdminMode = true; closeModal('passwordModal'); renderHome(); } else alert("Password errata!"); }
 
-// L'editor visivo di creazione/modifica è disabilitato nella versione multi-file, come concordato
+// L'editor visivo di creazione/modifica è disabilitato nella versione multi-file
 function openAdminEditor() { alert("Nella versione Multi-File, aggiungi i nodi modificando direttamente i file .js della storia."); }
 
 // Avvia l'interfaccia

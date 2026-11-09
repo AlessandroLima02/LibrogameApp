@@ -24,7 +24,7 @@
                 <span id="bookCount" style="font-size: 13px; color: var(--text-muted);">0 titoli</span>
             </div>
             <!-- Loading indicator per il caricamento dinamico -->
-            <div id="loadingIndicator" style="display: none; text-align: center; color: var(--accent-gold); margin-bottom: 10px;">Caricamento storia in corso...</div>
+            <div id="loadingIndicator" style="display: none; text-align: center; color: var(--accent-gold); margin-bottom: 10px;">Caricamento in corso...</div>
             <div id="bookListContainer"></div>
         </div>
     </div>
@@ -111,10 +111,23 @@
         </div>
     </div>
 
-    <!-- 1. Carica prima il catalogo -->
-    <script src="catalogo.js"></script>
-    <!-- 2. Carica la logica base -->
-    <script src="app.js"></script>
+    <!-- Sostituisci i vecchi tag <script> con questo blocco anti-cache -->
+    <script>
+        // Genera un numero univoco basato sull'orario esatto di caricamento
+        const noCacheVersione = new Date().getTime();
+        
+        // Crea il tag per caricare il catalogo in modo che scavalchi la cache
+        let scriptCatalogo = document.createElement('script');
+        scriptCatalogo.src = 'catalogo.js?v=' + noCacheVersione;
+        document.body.appendChild(scriptCatalogo);
+
+        // Subito dopo, carica il motore del gioco allo stesso modo
+        scriptCatalogo.onload = function() {
+            let scriptApp = document.createElement('script');
+            scriptApp.src = 'app.js?v=' + noCacheVersione;
+            document.body.appendChild(scriptApp);
+        };
+    </script>
 
 </body>
 </html>
